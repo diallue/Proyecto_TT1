@@ -100,6 +100,46 @@ ostream& operator << (ostream &o, Matrix &m) {
     return o;
 }
 
+Matrix& Matrix::operator * (Matrix &m) {
+	if (this->n_column != m.n_row) {
+		cout << "Matrix mult: error, columnas de A != filas de B\n";
+		exit(EXIT_FAILURE);
+	}
+
+	Matrix* result = new Matrix(this->n_row, m.n_column);
+
+	for (int i = 1; i <= this->n_row; i++) {
+		for (int j = 1; j <= m.n_column; j++) {
+			double sum = 0.0;
+			for (int k = 1; k <= this->n_column; k++) {
+				sum += (*this)(i, k) * m(k, j);
+			}
+			(*result)(i, j) = sum;
+		}
+	}
+
+	return *result;
+}
+
+Matrix& Matrix::operator / (Matrix &m) {
+	if (m.n_row != m.n_column) {
+		cout << "Matrix div: error, matriz no cuadrada\n";
+		exit(EXIT_FAILURE);
+	}
+
+	Matrix inverse = m.inversa();
+
+	if (this->n_column != inverse.n_row) {
+		cout << "Matrix div: error, dimensiones incompatibles\n";
+		exit(EXIT_FAILURE);
+	}
+
+	Matrix& result = (*this) * inverse;
+
+	return result;
+}
+
+
 Matrix& zeros(const int n) {
 	Matrix *m_aux = new Matrix(n, n_column);
 	
