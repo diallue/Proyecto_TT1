@@ -38,7 +38,7 @@ Matrix::Matrix(const int n_row, const int n_column) {
 	}
 }
 
-double& Matrix::operator() (const int n) {
+double& Matrix::operator () (const int n) {
 	if (n <= 0 || n >this->n_column*this->n_row) {
 		cout << "Matrix get: Error in n\n";
 		exit(EXIT_FAILURE);
@@ -73,6 +73,16 @@ Matrix& Matrix::operator + (Matrix &m) {
 	return *m_aux;
 }
 
+Matrix& Matrix::operator + (double val) {
+    Matrix* res = new Matrix(n_row, n_column);
+    for (int i = 1; i <= n_row; i++) {
+        for (int j = 1; j <= n_column; j++) {
+            (*res)(i,j) = (*this)(i,j) + val;
+        }
+    }
+    return *res;
+}
+
 Matrix& Matrix::operator - (Matrix &m) {
 	if (this->n_row != m.n_row || this->n_column != m.n_column) {
 		cout << "Matrix sub: error in n_row/n_column\n";
@@ -88,6 +98,16 @@ Matrix& Matrix::operator - (Matrix &m) {
 	}
 	
 	return *m_aux;
+}
+
+Matrix& Matrix::operator - (double val) {
+    Matrix* res = new Matrix(n_row, n_column);
+    for (int i = 1; i <= n_row; i++) {
+        for (int j = 1; j <= n_column; j++) {
+            (*res)(i,j) = (*this)(i,j) - val;
+        }
+    }
+    return *res;
 }
 
 ostream& operator << (ostream &o, Matrix &m) {
@@ -121,6 +141,16 @@ Matrix& Matrix::operator * (Matrix &m) {
 	return *result;
 }
 
+Matrix& Matrix::operator * (double val) {
+    Matrix* res = new Matrix(n_row, n_column);
+    for (int i = 1; i <= n_row; i++) {
+        for (int j = 1; j <= n_column; j++) {
+            (*res)(i,j) = (*this)(i,j) * val;
+        }
+    }
+    return *res;
+}
+
 Matrix& Matrix::operator / (Matrix &m) {
 	if (m.n_row != m.n_column) {
 		cout << "Matrix div: error, matriz no cuadrada\n";
@@ -139,6 +169,35 @@ Matrix& Matrix::operator / (Matrix &m) {
 	return result;
 }
 
+Matrix& Matrix::operator / (double val) {
+    if (val == 0) {
+        cout << "Matrix div: división por cero\n";
+        exit(EXIT_FAILURE);
+    }
+    Matrix* res = new Matrix(n_row, n_column);
+    for (int i = 1; i <= n_row; i++) {
+        for (int j = 1; j <= n_column; j++) {
+            (*res)(i,j) = (*this)(i,j) / val;
+        }
+    }
+    return *res;
+}
+
+Matrix& Matrix::operator=(Matrix m) {
+    if (this == &m) return *this;
+
+    n_row = m.n_row;
+    n_column = m.n_column;
+    data = (double**) malloc(n_row * sizeof(double*));
+    for (int i = 0; i < n_row; i++) {
+        data[i] = (double*) malloc(n_column * sizeof(double));
+        for (int j = 0; j < n_column; j++) {
+            data[i][j] = m.data[i][j];
+        }
+    }
+    return *this;
+}
+
 
 Matrix& zeros(const int n) {
 	Matrix *m_aux = new Matrix(n, n_column);
@@ -152,14 +211,93 @@ Matrix& zeros(const int n) {
 	return (*m_aux);
 }
 
-Matrix& zeros(const int n_row, const int n_column) {
-	Matrix *m_aux = new Matrix(n_row, n_column);
-	
-	for(int i = 1; i <= n_row; i++) {
-		for(int j = 1; j <= n_column; j++) {
-			(*m_aux)(i,j) = 0;
-		}
-	}
-	
-	return (*m_aux);
+double Matrix::norm() {
+    double sum = 0.0;
+    for (int i = 1; i <= n_row; i++) {
+        for (int j = 1; j <= n_column; j++) {
+            sum += (*this)(i,j) * (*this)(i,j);
+        }
+    }
+    return sqrt(sum);
+}
+
+double Matrix::dot(Matrix &m) {
+    if (n_row != m.n_row || n_column != m.n_column) {
+        cout << "Matrix dot: dimensiones incompatibles\n";
+        exit(EXIT_FAILURE);
+    }
+    double res = 0.0;
+    for (int i = 1; i <= n_row; i++) {
+        for (int j = 1; j <= n_column; j++) {
+            res += (*this)(i,j) * m(i,j);
+        }
+    }
+    return res;
+}
+
+Matrix Matrix::extract_vector(int index, bool row) {
+    if (row) return extract_row(index);
+    else return extract_column(index);
+}
+
+Matrix Matrix::extract_row(int r) {
+    if (r <= 0 || r > n_row) {
+        cout << "Matrix extract_row: fila inválida\n";
+        exit(EXIT_FAILURE);
+    }
+    Matrix rowMat(1, n_column);
+    for (int j = 1; j <= n_column; j++) rowMat(1,j) = (*this)(r,j);
+    return rowMat;
+}
+
+Matrix Matrix::extract_column(int c) {
+    if (c <= 0 || c > n_column) {
+        cout << "Matrix extract_column: columna inválida\n";
+        exit(EXIT_FAILURE);
+    }
+    Matrix colMat(n_row, 1);
+    for (int i = 1; i <= n_row; i++) colMat(i,1) = (*this)(i,c);
+    return colMat;
+}
+
+void Matrix::assign_row(int r, Matrix &rowMat) {
+    if (r <= 0 || r > n_row || rowMat.n_row != 1 || rowMat.n_column != n_column) {
+        cout << "Matrix assign_row: dimensiones incompatibles\n";
+        exit(EXIT_FAILURE);
+    }
+    for (int j = 1; j <= n_column; j++) (*this)(r,j) = rowMat(1,j);
+}
+
+void Matrix::assign_column(int c, Matrix &colMat) {
+    if (c <= 0 || c > n_column || colMat.n_column != 1 || colMat.n_row != n_row) {
+        cout << "Matrix assign_column: dimensiones incompatibles\n";
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 1; i <= n_row; i++) (*this)(i,c) = colMat(i,1);
+}
+
+Matrix Matrix::union_vector(Matrix &v, bool horizontal) {
+    if (horizontal) {
+        if (n_row != v.n_row) {
+            cout << "Matrix union_vector: filas incompatibles\n";
+            exit(EXIT_FAILURE);
+        }
+        Matrix result(n_row, n_column + v.n_column);
+        for (int i = 1; i <= n_row; i++) {
+            for (int j = 1; j <= n_column; j++) result(i,j) = (*this)(i,j);
+            for (int j = 1; j <= v.n_column; j++) result(i,n_column+j) = v(i,j);
+        }
+        return result;
+    } else {
+        if (n_column != v.n_column) {
+            cout << "Matrix union_vector: columnas incompatibles\n";
+            exit(EXIT_FAILURE);
+        }
+        Matrix result(n_row + v.n_row, n_column);
+        for (int j = 1; j <= n_column; j++) {
+            for (int i = 1; i <= n_row; i++) result(i,j) = (*this)(i,j);
+            for (int i = 1; i <= v.n_row; i++) result(n_row+i,j) = v(i,j);
+        }
+        return result;
+    }
 }

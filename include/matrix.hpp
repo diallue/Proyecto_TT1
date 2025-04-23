@@ -18,7 +18,7 @@ public:
     Matrix(const int n_row, const int n_column);
 	
 	// Member operators
-	double& operator() (const int n);
+	double& operator () (const int n);
 	double& operator () (const int row, const int column);
 	Matrix& operator + (Matrix &m);
 	Matrix& operator - (Matrix &m);
