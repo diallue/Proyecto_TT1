@@ -2,11 +2,15 @@
 #include "..\include\R_x.h"
 #include "..\include\R_y.h"
 #include "..\include\R_z.h"
+#include "..\include\gloabl.h"
 #include <iostream>
 
 using namespace std;
 
 int main() {
+	eop19620101(4); // c = 21413
+	cout << eop19620101;
+	
 	Matrix auxX = R_x(3);
 	cout << "auxX\n" << auxX << "\n";
 	
