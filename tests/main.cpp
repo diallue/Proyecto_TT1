@@ -1,8 +1,8 @@
-#include "..\include\matrix.h"
-#include "..\include\R_x.h"
-#include "..\include\R_y.h"
-#include "..\include\R_z.h"
-#include "..\include\gloabl.h"
+#include "..\include\matrix.hpp"
+#include "..\include\R_x.hpp"
+#include "..\include\R_y.hpp"
+#include "..\include\R_z.hpp"
+#include "..\include\gloabl.hpp"
 #include <iostream>
 
 using namespace std;

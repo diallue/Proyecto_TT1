@@ -1,3 +1,5 @@
+#include "..\include\timediff.hpp"
+
 tuple<double, double, double, double, double> timediff(double UT1_UTC, double TAI_UTC) {
 	const double TT_TAI  = 32.184;          // TT-TAI time difference [s]
     const double GPS_TAI = -19.0;           // GPS-TAI time difference [s]
