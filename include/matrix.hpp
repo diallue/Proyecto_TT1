@@ -21,13 +21,13 @@ public:
 	// Member operators
 	double& operator()(const int n);
     double& operator()(const int row, const int column);
-	Matrix& operator+(Matrix &m);
+	Matrix operator+(Matrix &m);
     Matrix& operator+(const double val);
-    Matrix& operator-(Matrix &m);
+    Matrix operator-(Matrix &m);
     Matrix& operator-(const double val);
-    Matrix& operator*(Matrix &m);
+    Matrix operator*(const Matrix &m);
     Matrix& operator*(const double val);
-    Matrix& operator/(Matrix &m);
+    Matrix operator/(Matrix &m);
     Matrix& operator/(const double val);
     Matrix& operator=(Matrix m);
 	
@@ -43,7 +43,7 @@ public:
     void assign_column(const int c, Matrix &colMat);
     Matrix union_vector(Matrix &v, bool horizontal);
     Matrix cross(Matrix &m);
-	Matrix eye(const int n);
+	static Matrix eye(const int n);
 };
 
 // Operator overloading
@@ -53,6 +53,6 @@ ostream& operator << (ostream &o, Matrix &m);
 Matrix transpose(Matrix &m);
 Matrix inv(Matrix &m);
 Matrix& zeros(const int n);
-Matrix& zeros(const int n_row, const int n_column);
+Matrix zeros(const int n_row, const int n_column);
 
 #endif

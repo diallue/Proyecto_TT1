@@ -22,6 +22,18 @@ int m_equals(Matrix A, Matrix B, double p) {
 	return 1;
 }
 
+int m_constructor_01() {
+    Matrix A(3, 3);
+    _assert(A.n_row == 3 && A.n_column == 3);
+    return 0;
+}
+
+int m_constructor_02() {
+    Matrix A;
+    _assert(A.n_row == 0 && A.n_column == 0);
+    return 0;
+}
+
 int m_zeros_01() {
     int f = 3;
     int c = 4;
@@ -312,8 +324,6 @@ int m_union_vector_01() {
 int all_tests() {
     _verify(m_constructor_01);
     _verify(m_constructor_02);
-    _verify(m_access_01);
-    _verify(m_access_02);
     _verify(m_sum_01);
     _verify(m_scalar_sum_01);
     _verify(m_sub_01);

@@ -1,4 +1,4 @@
-#include "..\include\matrix.h"
+#include "..\include\matrix.hpp"
 
 Matrix::Matrix() {
 	this->n_row = 0;
@@ -62,7 +62,7 @@ double& Matrix::operator () (const int row, const int column) {
 	return this->data[row - 1][column - 1];
 }
 
-Matrix& Matrix::operator + (Matrix &m) {
+Matrix Matrix::operator + (Matrix &m) {
 	if (this->n_row != m.n_row || this->n_column != m.n_column) {
 		cout << "Matrix sum: error in n_row/n_column\n";
         exit(EXIT_FAILURE);
@@ -89,7 +89,7 @@ Matrix& Matrix::operator + (const double val) {
     return *res;
 }
 
-Matrix& Matrix::operator - (Matrix &m) {
+Matrix Matrix::operator - (Matrix &m) {
 	if (this->n_row != m.n_row || this->n_column != m.n_column) {
 		cout << "Matrix sub: error in n_row/n_column\n";
         exit(EXIT_FAILURE);
@@ -116,7 +116,7 @@ Matrix& Matrix::operator - (const double val) {
     return *res;
 }
 
-ostream& operator << (ostream &o, Matrix &m) {
+ostream& operator << (ostream &o, Matrix m) {
 	for (int i = 1; i <= m.n_row; i++) {
         for (int j = 1; j <= m.n_column; j++)
 			printf("%5.20lf ", m(i,j));
@@ -126,7 +126,7 @@ ostream& operator << (ostream &o, Matrix &m) {
     return o;
 }
 
-Matrix& Matrix::operator * (Matrix &m) {
+Matrix Matrix::operator * (const Matrix &m) {
 	if (this->n_column != m.n_row) {
 		cout << "Matrix mult: error, columnas de A != filas de B\n";
 		exit(EXIT_FAILURE);
@@ -157,13 +157,13 @@ Matrix& Matrix::operator * (const double val) {
     return *res;
 }
 
-Matrix& Matrix::operator / (Matrix &m) {
+Matrix Matrix::operator / (Matrix &m) {
 	if (m.n_row != m.n_column) {
 		cout << "Matrix div: error, matriz no cuadrada\n";
 		exit(EXIT_FAILURE);
 	}
 
-	Matrix inverse = m.inversa();
+	Matrix inverse = inv(m);
 
 	if (this->n_column != inverse.n_row) {
 		cout << "Matrix div: error, dimensiones incompatibles\n";
@@ -205,7 +205,7 @@ Matrix& Matrix::operator = (Matrix m) {
 }
 
 Matrix& zeros(const int n) {
-	Matrix *m_aux = new Matrix(n, n_column);
+	Matrix *m_aux = new Matrix(n, n);
 	
 	for(int i = 1; i <= n; i++) {
 		for(int j = 1; j <= n_column; j++) {
@@ -214,6 +214,16 @@ Matrix& zeros(const int n) {
 	}
 	
 	return (*m_aux);
+}
+
+Matrix zeros(const int n_row, const int n_column) {
+    Matrix m(n_row, n_column);
+    for(int i = 1; i <= n_row; i++) {
+        for(int j = 1; j <= n_column; j++) {
+            m(i,j) = 0.0;
+        }
+    }
+    return m;
 }
 
 double Matrix::norm() {
