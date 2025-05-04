@@ -172,7 +172,7 @@ int m_div_01() {
     
     Matrix R = A / B;
     Matrix expected = A * inv(B);
-    _assert(m_equals(R, expected, 1e-8));
+    _assert(m_equals(R, expected, 1e-10));
     return 0;
 }
 
@@ -210,7 +210,7 @@ int m_inv_01() {
     I(1,1)=1; I(1,2)=0;
     I(2,1)=0; I(2,2)=1;
     
-    _assert(m_equals(product, I, 1e-8));
+    _assert(m_equals(product, I, 1e-10));
     return 0;
 }
 

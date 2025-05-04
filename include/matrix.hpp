@@ -25,7 +25,7 @@ public:
     Matrix& operator+(const double val);
     Matrix operator-(Matrix &m);
     Matrix& operator-(const double val);
-    Matrix operator*(const Matrix &m);
+    Matrix operator*(Matrix m);
     Matrix& operator*(const double val);
     Matrix operator/(Matrix &m);
     Matrix& operator/(const double val);

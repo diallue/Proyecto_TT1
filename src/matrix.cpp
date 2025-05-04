@@ -126,7 +126,7 @@ ostream& operator << (ostream &o, Matrix m) {
     return o;
 }
 
-Matrix Matrix::operator * (const Matrix &m) {
+Matrix Matrix::operator * (Matrix m) {
 	if (this->n_column != m.n_row) {
 		cout << "Matrix mult: error, columnas de A != filas de B\n";
 		exit(EXIT_FAILURE);
@@ -170,7 +170,7 @@ Matrix Matrix::operator / (Matrix &m) {
 		exit(EXIT_FAILURE);
 	}
 
-	Matrix& result = (*this) * inverse;
+	Matrix result = (*this) * inverse;
 
 	return result;
 }
@@ -208,7 +208,7 @@ Matrix& zeros(const int n) {
 	Matrix *m_aux = new Matrix(n, n);
 	
 	for(int i = 1; i <= n; i++) {
-		for(int j = 1; j <= n_column; j++) {
+		for(int j = 1; j <= n; j++) {
 			(*m_aux)(i,j) = 0;
 		}
 	}
