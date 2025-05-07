@@ -1,7 +1,7 @@
 #indef _GLOBAL_
 #define _GLOBAL_
 
-#include "..\include\matrix.h"
+#include "..\include\matrix.hpp"
 #include <cmath>
 
 extern Matrix eopdata;

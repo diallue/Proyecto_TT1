@@ -1,11 +1,11 @@
-#include "..\include\gloabl.h"
+#include "..\include\global.hpp"
 
 extern Matrix eopdata;
 
 void Matrix::eop19620101(int c) {
-	eopdata = zeros(13);
+	eopdata = zeros(13, c);
 	
-	FILE *fid = fopen("eop19620101.txt","r");
+	FILE *fid = fopen("..\data\eop19620101.txt","r");
 	
 	if (fp == NULL) {
 		printf("Fail open eop19620101.txt file\n");
