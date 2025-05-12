@@ -4,6 +4,6 @@
 #include "..\include\matrix.h"
 #include <cmath>
 
-Matrix& sign_(double a, double b);
+double sign_(double a, double b);
 
 #endif;

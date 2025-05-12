@@ -3,7 +3,10 @@
 
 #include "..\include\matrix.hpp"
 #include <cmath>
+#include <iostream>
 
-Matrix& EccAnom(double M, double e);
+using namespace std;
+
+double EccAnom(double M, double e);
 
 #endif

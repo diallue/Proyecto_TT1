@@ -1,4 +1,5 @@
 #include "..\include\matrix.hpp"
+#include "..\include\NutAngles.hpp"
 #include <cstdio>
 #include <cmath>
 
@@ -321,6 +322,21 @@ int m_union_vector_01() {
     return 0;
 }
 
+int nut_angles_01() {
+    double Mjd_TT = 51544.5;
+    auto [dpsi, deps] = NutAngles(Mjd_TT);
+
+    double expected_dpsi = -0.0000660715;
+    double expected_deps = 0.0000286707;
+
+    double tolerance = 1e-8;
+
+    _assert(std::fabs(dpsi - expected_dpsi) < tolerance);
+    _assert(std::fabs(deps - expected_deps) < tolerance);
+
+    return 0;
+}
+
 int all_tests() {
     _verify(m_constructor_01);
     _verify(m_constructor_02);
@@ -343,6 +359,7 @@ int all_tests() {
     _verify(m_assign_row_01);
     _verify(m_assign_column_01);
     _verify(m_union_vector_01);
+	_verify(nut_angles_01);
 
     return 0;
 }

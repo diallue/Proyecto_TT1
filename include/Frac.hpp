@@ -4,6 +4,6 @@
 #include "..\include\matrix.hpp"
 #include <cmath>
 
-Matrix& Frac(double x);
+double Frac(double x);
 
 #endif

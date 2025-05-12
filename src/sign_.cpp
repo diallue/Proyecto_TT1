@@ -1,7 +1,7 @@
 #include "..\include\sign_.hpp"
 
-Matrix& sign_(double a, double b) {
-	Matrix& result;
+double sign_(double a, double b) {
+	double result;
 	
 	if (b >= 0.0) {
 		result = fabs(a);

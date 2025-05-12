@@ -3,7 +3,10 @@
 
 #include "..\include\matrix.hpp"
 #include <cmath>
+#include <iostream>
 
-double Cheb3D(double t, double N, double Ta, double Tb, double Cx, double Cy, double Cz);
+using namespace std;
+
+Matrix Cheb3D(double t, int N, double Ta, double Tb, const Matrix& Cx, const Matrix& Cy, const Matrix& Cz);
 
 #endif

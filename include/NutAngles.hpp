@@ -5,7 +5,8 @@
 #include "..\include\SAT_Const.hpp"
 #include <cmath>
 #include <vector>
+#include <tuple>
 
 tuple<double, double> NutAngles(double Mjd_TT);
 
-#endif;
+#endif

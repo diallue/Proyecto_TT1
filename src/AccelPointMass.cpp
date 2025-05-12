@@ -1,11 +1,12 @@
 #include "..\include\AccelPointMass.hpp"
 
-double AccelPointMass(double r, double s, double GM) {
-	// Relative position vector of satellite w.r.t. point mass 
-	double d = r - s;
+Matrix AccelPointMass(const Matrix& r, const Matrix& s, double GM) {
+    Matrix d = r - s;
 
-	// Acceleration 
-	double a = -GM * ( d/(norm(d)^3) + s/(norm(s)^3) );
+    double norm_d_cubed = pow(d.norm(), 3);
+    double norm_s_cubed = pow(s.norm(), 3);
 	
-	return a;
+    Matrix a = -GM * ((d / norm_d_cubed) + (s / norm_s_cubed));
+
+    return a;
 }
