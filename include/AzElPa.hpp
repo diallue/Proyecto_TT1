@@ -7,6 +7,6 @@
 #include <tuple>
 #include <vector>
 
-tuple<double, double, std::vector<double>, std::vector<double>> AzElPa(double s);
+tuple<double, double, Matrix, Matrix> AzElPa(Matrix& s);
 
 #endif

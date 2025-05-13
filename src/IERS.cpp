@@ -1,51 +1,57 @@
 #include "..\include\IERS.hpp"
 
-void IERS(double eop, double Mjd_UTC, double interp) {
-	
-	if (nargin == 2) {
-	   interp = 'n';
-	}
+tuple<double, double, double, double, double, double, double, double, double> IERS(const Matrix& eop, double Mjd_UTC, char interp = 'n') {
+    double x_pole, y_pole, UT1_UTC, LOD, dpsi, deps, dx_pole, dy_pole, TAI_UTC;
 
-	if (interp =='l') {
-		// linear interpolation
-		mjd = (floor(Mjd_UTC));
-		i = find(mjd==eop(4,:),1,'first');
-		preeop = eop(:,i);
-		nexteop = eop(:,i+1);
-		mfme = 1440*(Mjd_UTC-floor(Mjd_UTC));
-		fixf = mfme/1440;
-		// Setting of IERS Earth rotation parameters
-		// (UT1-UTC [s], TAI-UTC [s], x ["], y ["])
-		x_pole  = preeop(5)+(nexteop(5)-preeop(5))*fixf;
-		y_pole  = preeop(6)+(nexteop(6)-preeop(6))*fixf;
-		UT1_UTC = preeop(7)+(nexteop(7)-preeop(7))*fixf;
-		LOD     = preeop(8)+(nexteop(8)-preeop(8))*fixf;
-		dpsi    = preeop(9)+(nexteop(9)-preeop(9))*fixf;
-		deps    = preeop(10)+(nexteop(10)-preeop(10))*fixf;
-		dx_pole = preeop(11)+(nexteop(11)-preeop(11))*fixf;
-		dy_pole = preeop(12)+(nexteop(12)-preeop(12))*fixf;
-		TAI_UTC = preeop(13);
-		
-		x_pole  = x_pole/ARCS;  // Pole coordinate [rad]
-		y_pole  = y_pole/ARCS;  // Pole coordinate [rad]
-		dpsi    = dpsi/ARCS;
-		deps    = deps/ARCS;
-		dx_pole = dx_pole/ARCS; // Pole coordinate [rad]
-		dy_pole = dy_pole/ARCS; // Pole coordinate [rad]
-	} elseif (interp =='n') {   
-		mjd = (floor(Mjd_UTC));
-		i = find(mjd==eop(4,:),1,'first');
-		eop = eop(:,i);
-		// Setting of IERS Earth rotation parameters
-		// (UT1-UTC [s], TAI-UTC [s], x ["], y ["])
-		x_pole  = eop(5)/ARCS;  // Pole coordinate [rad]
-		y_pole  = eop(6)/ARCS;  // Pole coordinate [rad]
-		UT1_UTC = eop(7);       // UT1-UTC time difference [s]
-		LOD     = eop(8);       // Length of day [s]
-		dpsi    = eop(9)/ARCS;
-		deps    = eop(10)/ARCS;
-		dx_pole = eop(11)/ARCS; // Pole coordinate [rad]
-		dy_pole = eop(12)/ARCS; // Pole coordinate [rad]
-		TAI_UTC = eop(13);      // TAI-UTC time difference [s]
-	}
+    if (interp == 'l') {
+        double mjd = floor(Mjd_UTC);
+        int i = 0;
+        for (int j = 1; j <= eop.n_col; ++j) {
+            if (eop(4, j) == mjd) {
+                i = j;
+                break;
+            }
+        }
+        Matrix preeop = eop.slice(1, i, eop.n_row, i);
+        Matrix nexteop = eop.slice(1, i + 1, eop.n_row, i + 1);
+        double mfme = 1440 * (Mjd_UTC - floor(Mjd_UTC));
+        double fixf = mfme / 1440;
+        x_pole  = preeop(5, 1) + (nexteop(5, 1) - preeop(5, 1)) * fixf;
+        y_pole  = preeop(6, 1) + (nexteop(6, 1) - preeop(6, 1)) * fixf;
+        UT1_UTC = preeop(7, 1) + (nexteop(7, 1) - preeop(7, 1)) * fixf;
+        LOD     = preeop(8, 1) + (nexteop(8, 1) - preeop(8, 1)) * fixf;
+        dpsi    = preeop(9, 1) + (nexteop(9, 1) - preeop(9, 1)) * fixf;
+        deps    = preeop(10, 1) + (nexteop(10, 1) - preeop(10, 1)) * fixf;
+        dx_pole = preeop(11, 1) + (nexteop(11, 1) - preeop(11, 1)) * fixf;
+        dy_pole = preeop(12, 1) + (nexteop(12, 1) - preeop(12, 1)) * fixf;
+        TAI_UTC = preeop(13, 1);
+
+        x_pole  = x_pole / ARCS;
+        y_pole  = y_pole / ARCS;
+        dpsi    = dpsi / ARCS;
+        deps    = deps / ARCS;
+        dx_pole = dx_pole / ARCS;
+        dy_pole = dy_pole / ARCS;
+    } else {
+        double mjd = floor(Mjd_UTC);
+        int i = 0;
+        for (int j = 1; j <= eop.n_col; ++j) {
+            if (eop(4, j) == mjd) {
+                i = j;
+                break;
+            }
+        }
+        Matrix eop = eop.slice(1, i, eop.n_row, i);
+        x_pole  = eop(5, 1) / ARCS;
+        y_pole  = eop(6, 1) / ARCS;
+        UT1_UTC = eop(7, 1);                
+        LOD     = eop(8, 1);                 
+        dpsi    = eop(9, 1) / ARCS;
+        deps    = eop(10, 1) / ARCS;
+        dx_pole = eop(11, 1) / ARCS; 
+        dy_pole = eop(12, 1) / ARCS; 
+        TAI_UTC = eop(13, 1);                
+    }
+
+    return make_tuple(x_pole, y_pole, UT1_UTC, LOD, dpsi, deps, dx_pole, dy_pole, TAI_UTC);
 }

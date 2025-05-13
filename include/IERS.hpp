@@ -7,6 +7,6 @@
 #include <tuple>
 #include <vector>
 
-void IERS(double eop, double Mjd_UTC, double interp);
+tuple<double, double, double, double, double, double, double, double, double> IERS(const Matrix& eop, double Mjd_UTC, char interp = 'n');
 
 #endif
