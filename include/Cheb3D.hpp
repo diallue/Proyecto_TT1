@@ -1,4 +1,4 @@
-#indef _CHEB3D_
+#ifndef _CHEB3D_
 #define _CHEB3D_
 
 #include "..\include\matrix.hpp"

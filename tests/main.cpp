@@ -8,7 +8,7 @@
 using namespace std;
 
 int main() {
-	eop19620101(4); // c = 21413
+	eop19620101(21413); // c = 21413
 	cout << eop19620101;
 	
 	Matrix auxX = R_x(3);

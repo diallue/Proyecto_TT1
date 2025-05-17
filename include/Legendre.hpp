@@ -7,4 +7,4 @@
 
 tuple<Matrix, Matrix> Legendre(double n, double m, double fi);
 
-#endif;
+#endif

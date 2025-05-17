@@ -1,4 +1,4 @@
-#indef _AZELPA_
+#ifndef _AZELPA_
 #define _AZELPA_
 
 #include "..\include\matrix.hpp"

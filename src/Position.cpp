@@ -1,6 +1,6 @@
-#include "..\include\Position.h"
+#include "..\include\Position.hpp"
 
-Matrix Position(double lon, double, lat, double h) {
+Matrix Position(double lon, double lat, double h) {
 	double R_equ = R_EARTH;
 	double f = F_EARTH;
 	

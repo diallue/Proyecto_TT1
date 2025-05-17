@@ -1,4 +1,4 @@
-#indef _FRAC_
+#ifndef _FRAC_
 #define _FRAC_
 
 #include "..\include\matrix.hpp"

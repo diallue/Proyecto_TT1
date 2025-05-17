@@ -1,4 +1,4 @@
-#include "..\include\R_x.hpp"
+#include "..\include\EccAnom.hpp"
 
 double EccAnom(double M, double e) {
     const int maxit = 15;
@@ -10,7 +10,7 @@ double EccAnom(double M, double e) {
     if (e < 0.8) {
         E = M;
     } else {
-        E = pi;
+        E = 3.141592653589793;
     }
 
     double f = E - e * std::sin(E) - M;

@@ -44,6 +44,7 @@ public:
     Matrix union_vector(Matrix &v, bool horizontal);
     Matrix cross(Matrix &m);
 	static Matrix eye(const int n);
+	void eop19620101(int c);
 };
 
 // Operator overloading

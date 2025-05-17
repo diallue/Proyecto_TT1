@@ -1,6 +1,6 @@
 #include "..\include\R_x.hpp"
 
-Matrix& R_x(double angle) {
+Matrix R_x(double angle) {
 	double C = cos(angle);
 	double S = sin(angle);
 	Matrix rotmat = zeros(3,3);

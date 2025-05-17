@@ -3,7 +3,7 @@
 static Matrix Cnm;
 static Matrix Snm;
 
-Matrix AccelHarmonic(const Matrix& r, const Matrix& E, int n_max, int m_max) {
+Matrix AccelHarmonic(Matrix& r, Matrix& E, int n_max, int m_max) {
     const double r_ref = 6378.1363e3; 
     const double gm = 398600.4415e9;  
 
@@ -50,7 +50,7 @@ Matrix AccelHarmonic(const Matrix& r, const Matrix& E, int n_max, int m_max) {
     a_bf(2,1) = ay;
     a_bf(3,1) = az;
 
-    Matrix a = E.transpose() * a_bf;
+    Matrix a = transpose(E) * a_bf;
 
     return a;
 }

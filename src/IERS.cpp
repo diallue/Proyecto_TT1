@@ -1,19 +1,19 @@
 #include "..\include\IERS.hpp"
 
-tuple<double, double, double, double, double, double, double, double, double> IERS(const Matrix& eop, double Mjd_UTC, char interp = 'n') {
+tuple<double, double, double, double, double, double, double, double, double> IERS(Matrix& eop, double Mjd_UTC, char interp) {
     double x_pole, y_pole, UT1_UTC, LOD, dpsi, deps, dx_pole, dy_pole, TAI_UTC;
 
     if (interp == 'l') {
         double mjd = floor(Mjd_UTC);
         int i = 0;
-        for (int j = 1; j <= eop.n_col; ++j) {
+        for (int j = 1; j <= eop.n_column; ++j) {
             if (eop(4, j) == mjd) {
                 i = j;
                 break;
             }
         }
-        Matrix preeop = eop.slice(1, i, eop.n_row, i);
-        Matrix nexteop = eop.slice(1, i + 1, eop.n_row, i + 1);
+        Matrix preeop = eop.extract_column(i);
+        Matrix nexteop = eop.extract_column(i + 1);
         double mfme = 1440 * (Mjd_UTC - floor(Mjd_UTC));
         double fixf = mfme / 1440;
         x_pole  = preeop(5, 1) + (nexteop(5, 1) - preeop(5, 1)) * fixf;
@@ -35,13 +35,13 @@ tuple<double, double, double, double, double, double, double, double, double> IE
     } else {
         double mjd = floor(Mjd_UTC);
         int i = 0;
-        for (int j = 1; j <= eop.n_col; ++j) {
+        for (int j = 1; j <= eop.n_column; ++j) {
             if (eop(4, j) == mjd) {
                 i = j;
                 break;
             }
         }
-        Matrix eop = eop.slice(1, i, eop.n_row, i);
+        eop = eop.extract_column(i);
         x_pole  = eop(5, 1) / ARCS;
         y_pole  = eop(6, 1) / ARCS;
         UT1_UTC = eop(7, 1);                

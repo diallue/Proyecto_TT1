@@ -1,4 +1,4 @@
-#indef _MEANOBLIQUITY_
+#ifndef _MEANOBLIQUITY_
 #define _MEANOBLIQUITY_
 
 #include "..\include\matrix.hpp"

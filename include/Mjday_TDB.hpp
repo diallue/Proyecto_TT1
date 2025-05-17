@@ -1,4 +1,4 @@
-#indef _MJDAY_TDB_
+#ifndef _MJDAY_TDB_
 #define _MJDAY_TDB_
 
 #include "..\include\matrix.hpp"

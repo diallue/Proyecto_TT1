@@ -1,5 +1,5 @@
-#indef _AZELPA_
-#define _AZELPA_
+#ifndef _IERS_
+#define _IERS_
 
 #include "..\include\matrix.hpp"
 #include "..\include\SAT_Const.hpp"
