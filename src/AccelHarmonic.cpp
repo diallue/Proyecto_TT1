@@ -9,11 +9,14 @@ Matrix AccelHarmonic(Matrix& r, Matrix& E, int n_max, int m_max) {
 
     Matrix r_bf = E * r;
 
-    double d = sqrt(r_bf(1,1) * r_bf(1,1) + r_bf(2,1) * r_bf(2,1) + r_bf(3,1) * r_bf(3,1)); // norm(r_bf)
+    double d = sqrt(r_bf(1,1) * r_bf(1,1) + r_bf(2,1) * r_bf(2,1) + r_bf(3,1) * r_bf(3,1));
     double latgc = asin(r_bf(3,1) / d);
     double lon = atan2(r_bf(2,1), r_bf(1,1));
 
-    auto [pnm, dpnm] = Legendre(n_max, m_max, latgc);
+    Matrix pnm(n_max+1, m_max+1);
+    Matrix dpnm(n_max+1, m_max+1);
+    
+    Legendre(n_max, m_max, latgc, pnm, dpnm);
 
     double dUdr = 0.0;
     double dUdlatgc = 0.0;

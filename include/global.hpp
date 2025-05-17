@@ -4,7 +4,7 @@
 #include "..\include\matrix.hpp"
 #include <cmath>
 
-extern Matrix eopdata;
+//extern Matrix eopdata;
 
 void eop19620101(int c);
 

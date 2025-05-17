@@ -5,6 +5,6 @@
 #include <cmath>
 #include <vector>
 
-tuple<Matrix, Matrix> Legendre(double n, double m, double fi);
+void Legendre(int n, int m, double fi, Matrix &pnm, Matrix &dpnm);
 
 #endif

@@ -1,14 +1,14 @@
 #include "..\include\NutAngles.hpp"
 
 tuple<double, double> NutAngles(double Mjd_TT) {
-	double T  = (Mjd_TT - MJD_J2000)/36525;
-	double T2 = T * T;
-	double T3 = T2 * T;
-	double rev = 360 * 3600; // arcsec/revolution
+    double T  = (Mjd_TT - MJD_J2000)/36525;
+    double T2 = T * T;
+    double T3 = T2 * T;
+    double rev = 360 * 3600; // arcsec/revolution
 
-	int N_coeff = 106;
-	Matrix C(N_coeff, 9);
-	double C_data[N_coeff][9] = {
+    const int N_coeff = 106;
+    Matrix C(N_coeff, 9);
+    double C_data[N_coeff][9] = {
 	  // l  l' F  D Om    dpsi    *T     deps     *T
 		{0, 0, 0, 0, 1, -1719960, -1742, 920250, 89},  // 1
         {0, 0, 0, 0, 2, 20620, 2, -8950, 5},           // 2
@@ -117,40 +117,33 @@ tuple<double, double> NutAngles(double Mjd_TT) {
         {0, 0, 2, 4, 2, -10, 0, 0, 0},                 // 105
         {0, 1, 0, 1, 0, 10, 0, 0, 0}                   // 106
 	};
-	 
-	 for (int i = 0; i <= N_coeff; i++) {
-        for (int j = 0; j <= 9; j++) {
-            C(i, j) = C_data[i-1][j-1];
+     
+    // Llenar la matriz C (notar que los índices comienzan en 0)
+    for (int i = 0; i < N_coeff; i++) {
+        for (int j = 0; j < 9; j++) {
+            C(i+1, j+1) = C_data[i][j];  // +1 porque Matrix usa índices basados en 1
         }
     }
 
-	// Mean arguments of luni-solar motion
+    // Mean arguments of luni-solar motion
+    double l  = fmod(485866.733 + (1325.0*rev + 715922.633)*T + 31.310*T2 + 0.064*T3, rev);
+    double lp = fmod(1287099.804 + (99.0*rev + 1292581.224)*T - 0.577*T2 - 0.012*T3, rev);
+    double F  = fmod(335778.877 + (1342.0*rev + 295263.137)*T - 13.257*T2 + 0.011*T3, rev);
+    double D  = fmod(1072261.307 + (1236.0*rev + 1105601.328)*T - 6.891*T2 + 0.019*T3, rev);
+    double Om = fmod(450160.280 - (5.0*rev + 482890.539)*T + 7.455*T2 + 0.008*T3, rev);
 
-	//   l   mean anomaly of the Moon
-	//   l'  mean anomaly of the Sun
-	//   F   mean argument of latitude
-	//   D   mean longitude elongation of the Moon from the Sun 
-	//   Om  mean longitude of the ascending node
+    // Nutation in longitude and obliquity [rad]
+    double dpsi = 0;
+    double deps = 0;
 
-	double l  = fmod (  485866.733 + (1325.0*rev +  715922.633)*T + 31.310*T2 + 0.064*T3, rev );
-	double lp = fmod ( 1287099.804 + (  99.0*rev + 1292581.224)*T -  0.577*T2 - 0.012*T3, rev );
-	double F  = fmod (  335778.877 + (1342.0*rev +  295263.137)*T - 13.257*T2 + 0.011*T3, rev );
-	double D  = fmod ( 1072261.307 + (1236.0*rev + 1105601.328)*T -  6.891*T2 + 0.019*T3, rev );
-	double Om = fmod (  450160.280 - (   5.0*rev +  482890.539)*T  +  7.455*T2 + 0.008*T3, rev );
+    for (int i = 0; i < N_coeff; i++) {
+        double arg = (C(i+1,1)*l + C(i+1,2)*lp + C(i+1,3)*F + C(i+1,4)*D + C(i+1,5)*Om)/ARCS;
+        dpsi += (C(i+1,6) + C(i+1,7)*T) * sin(arg);
+        deps += (C(i+1,8) + C(i+1,9)*T) * cos(arg);
+    }
 
-	// Nutation in longitude and obliquity [rad]
-
-	double dpsi = 0;
-	double deps = 0;
-
-	for (int i=0; i <= N_coeff; i++) {
-	  double arg  =  ( C(i,1)*l+C(i,2)*lp+C(i,3)*F+C(i,4)*D+C(i,5)*Om )/ARCS;
-	  dpsi = dpsi + ( C(i,6)+C(i,7)*T ) * sin(arg);
-	  deps = deps + ( C(i,8)+C(i,9)*T ) * cos(arg);
-	}
-
-	dpsi = 1.0e-5 * dpsi/ARCS;
-	deps = 1.0e-5 * deps/ARCS;
-	
-	return make_tuple(dpsi, deps);
+    dpsi = 1.0e-5 * dpsi/ARCS;
+    deps = 1.0e-5 * deps/ARCS;
+    
+    return make_tuple(dpsi, deps);
 }

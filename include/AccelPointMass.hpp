@@ -4,6 +4,6 @@
 #include "..\include\matrix.hpp"
 #include <cmath>
 
-Matrix AccelPointMass(const Matrix& r, const Matrix& s, double GM);
+Matrix AccelPointMass(Matrix& r, Matrix& s, double GM);
 
 #endif

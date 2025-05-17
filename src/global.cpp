@@ -1,9 +1,9 @@
 #include "..\include\global.hpp"
 
-extern Matrix eopdata;
+//extern Matrix eopdata;
 
 void Matrix::eop19620101(int c) {
-	eopdata = zeros(13, c);
+	Matrix eopdata = zeros(13, c);
 	
 	FILE *fid = fopen("../data/eop19620101.txt","r");
 	

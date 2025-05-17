@@ -12,21 +12,27 @@ Matrix::Matrix() {
  * @throw Error si v_size es negativo
  */
 Matrix::Matrix(const int v_size) {
-	if (v_size < 0) {
-		cout << "Matrix: Error in v_size\n";
-		exit(EXIT_FAILURE);
-	}
-	
-	this->n_row = n_row;
-	this->n_column = v_size;
-	this->data = (double**)malloc(n_row*sizeof(double));
-	
-	if (this->data == NULL) {
-		cout << "Matrix: Error in data\n";
-		exit(EXIT_FAILURE);
-	}
-	
-	this->data[v_size] = (double*)calloc(v_size, sizeof(double));
+    if (v_size < 0) {
+        cout << "Matrix: Error in v_size\n";
+        exit(EXIT_FAILURE);
+    }
+    
+    this->n_row = v_size;
+    this->n_column = 1;
+    this->data = (double**)malloc(v_size * sizeof(double*));
+    
+    if (this->data == NULL) {
+        cout << "Matrix: Error in data\n";
+        exit(EXIT_FAILURE);
+    }
+    
+    for (int i = 0; i < v_size; i++) {
+        this->data[i] = (double*)calloc(1, sizeof(double)); // 1 columna
+        if (this->data[i] == NULL) {
+            cout << "Matrix: Error in data row allocation\n";
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 /**
@@ -78,12 +84,13 @@ double& Matrix::operator () (const int n) {
  * @throw Error si las coordenadas están fuera de rango
  */
 double& Matrix::operator () (const int row, const int column) {
-	if (row <= 0 || row > this->n_row || column <= 0 || column > this->n_column) {
-		cout << "Matrix get: error in row/column\n";
+    if (row <= 0 || row > this->n_row || column <= 0 || column > this->n_column) {
+        cout << "Matrix get: error in row/column (row=" << row << ", column=" << column 
+             << ", n_row=" << this->n_row << ", n_column=" << this->n_column << ")\n";
         exit(EXIT_FAILURE);
-	}
-	
-	return this->data[row - 1][column - 1];
+    }
+    
+    return this->data[row - 1][column - 1];
 }
 
 /**
@@ -168,7 +175,7 @@ Matrix& Matrix::operator - (const double val) {
  * @param m Matriz a imprimir
  * @return Referencia al stream de salida para permitir encadenamiento
  */
-ostream& operator << (ostream &o, Matrix m) {
+ostream& operator << (ostream &o, Matrix& m) {
 	for (int i = 1; i <= m.n_row; i++) {
         for (int j = 1; j <= m.n_column; j++)
 			printf("%5.20lf ", m(i,j));
