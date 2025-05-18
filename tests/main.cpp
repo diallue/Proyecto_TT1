@@ -11,6 +11,8 @@ int main() {
 	eop19620101(21413); // c = 21413
 	cout << eop19620101;
 	
+	GGM03S(16471);
+	
 	Matrix auxX = R_x(3);
 	cout << "auxX\n" << auxX << "\n";
 	

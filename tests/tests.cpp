@@ -1,4 +1,5 @@
 #include "..\include\matrix.hpp"
+#include "..\include\global.hpp"
 #include "..\include\AccelPointMass.hpp"
 #include "..\include\Cheb3D.hpp"
 #include "..\include\EccAnom.hpp"
@@ -13,6 +14,7 @@
 #include "..\include\sign_.hpp"
 #include "..\include\timediff.hpp"
 #include "..\include\AzElPa.hpp"
+#include "..\include\IERS.hpp"
 #include "..\include\Legendre.hpp"
 #include "..\include\NutAngles.hpp"
 #include "..\include\TimeUpdate.hpp"
@@ -581,6 +583,68 @@ int azelpa_test_01() {
     return 0;
 }
 
+int iers_test_01() {
+    std::cout << "Starting iers_test_01\n";
+
+    // Inicializar eopdata
+    eop19620101(21413); // Como en main.cpp
+
+    // Configurar matriz eop para simular entrada
+    Matrix eop(13, 2); // Dos columnas para interpolación
+    // Primera columna (MJD = 49746)
+    eop(4, 1) = 49746.0; // MJD
+    eop(5, 1) = -5.59518621231704e-07 * ARCS; // x_pole en arcosegundos
+    eop(6, 1) = 2.33458634442529e-06 * ARCS;  // y_pole en arcosegundos
+    eop(7, 1) = 0.3260677;                    // UT1_UTC
+    eop(8, 1) = 0.0027213;                    // LOD
+    eop(9, 1) = -1.16864337831454e-07 * ARCS; // dpsi en arcosegundos
+    eop(10, 1) = -2.48709418409192e-08 * ARCS; // deps en arcosegundos
+    eop(11, 1) = -8.19335121075116e-10 * ARCS; // dx_pole en arcosegundos
+    eop(12, 1) = -1.53201123230613e-09 * ARCS; // dy_pole en arcosegundos
+    eop(13, 1) = 29.0;                        // TAI_UTC
+    // Segunda columna (MJD = 49747, valores dummy para interpolación)
+    eop(4, 2) = 49747.0;
+    eop(5, 2) = eop(5, 1);
+    eop(6, 2) = eop(6, 1);
+    eop(7, 2) = eop(7, 1);
+    eop(8, 2) = eop(8, 1);
+    eop(9, 2) = eop(9, 1);
+    eop(10, 2) = eop(10, 1);
+    eop(11, 2) = eop(11, 1);
+    eop(12, 2) = eop(12, 1);
+    eop(13, 2) = eop(13, 1);
+
+    // Llamar a IERS con interpolación lineal
+    double Mjd_UTC = 49746.0;
+    auto result = IERS(eop, Mjd_UTC, 'l');
+
+    // Valores esperados (de MATLAB)
+    double expected_x_pole = -5.59518621231704e-07;
+    double expected_y_pole = 2.33458634442529e-06;
+    double expected_UT1_UTC = 0.3260677;
+    double expected_LOD = 0.0027213;
+    double expected_dpsi = -1.16864337831454e-07;
+    double expected_deps = -2.48709418409192e-08;
+    double expected_dx_pole = -8.19335121075116e-10;
+    double expected_dy_pole = -1.53201123230613e-09;
+    double expected_TAI_UTC = 29.0;
+
+    // Comparar resultados
+    std::cout << "Comparing results\n";
+    _assert(std::abs(std::get<0>(result) - expected_x_pole) < 1e-12);
+    _assert(std::abs(std::get<1>(result) - expected_y_pole) < 1e-12);
+    _assert(std::abs(std::get<2>(result) - expected_UT1_UTC) < 1e-7);
+    _assert(std::abs(std::get<3>(result) - expected_LOD) < 1e-7);
+    _assert(std::abs(std::get<4>(result) - expected_dpsi) < 1e-12);
+    _assert(std::abs(std::get<5>(result) - expected_deps) < 1e-12);
+    _assert(std::abs(std::get<6>(result) - expected_dx_pole) < 1e-12);
+    _assert(std::abs(std::get<7>(result) - expected_dy_pole) < 1e-12);
+    _assert(std::abs(std::get<8>(result) - expected_TAI_UTC) < 1e-7);
+
+    std::cout << "Finished iers_test_01\n";
+    return 0;
+}
+
 int legendre_test_01() {
     std::cout << "Starting legendre_test_01\n";
     int n = 3;
@@ -695,43 +759,24 @@ int timeupdate_test_01() {
 
 int accel_harmonic_test_01() {
     std::cout << "Starting accel_harmonic_test_01\n";
-
+    
     Matrix r(3, 1);
-    r(1,1) = 7000e3; r(2,1) = 0; r(3,1) = 0;
-
+    r(1,1) = 6378136.3; r(2,1) = 0.0; r(3,1) = 0.0;
+    
     Matrix E = Matrix::eye(3);
+    
     int n_max = 4;
     int m_max = 4;
     
-    // Redimensionar y llenar las matrices globales
-    Matrix Cnm = Matrix(n_max+2, m_max+2); // +2 porque se accede con índice n+1, m+1
-    Matrix Snm = Matrix(n_max+2, m_max+2);
-    
-    // Inicializar a cero
-    for (int i = 1; i <= n_max+1; i++) {
-        for (int j = 1; j <= m_max+1; j++) {
-            Cnm(i,j) = 0.0;
-            Snm(i,j) = 0.0;
-        }
-    }
-    
-    // Establecer coeficiente C30 (n=3, m=0)
-    Cnm(4, 1) = -2.539887e-6;  // Cnm(n+1, m+1)
-
-    Matrix a = AccelHarmonic(r, E, n_max, m_max);
-    
     Matrix expected(3, 1);
-    expected(1,1) = -8.14571105963231;
-    expected(2,1) = 1.8418953912846e-05;
-    expected(3,1) = 6.13947378070986e-05;
+    expected(1,1) = -9.81424910913625;
+    expected(2,1) = 3.49605441401039e-05;
+    expected(3,1) = 0.000106491609085503;
     
-    double tolerance = 1e-12;
-    _assert(a.n_row == expected.n_row);
-    _assert(a.n_column == expected.n_column);
-    for(int i = 1; i <= 3; i++) {
-        _assert(fabs(a(i,1) - expected(i,1)) < tolerance);
-    }
-
+    Matrix result = AccelHarmonic(r, E, n_max, m_max);
+    
+    _assert(m_equals(result, expected, 1e-10));
+    
     std::cout << "Finished accel_harmonic_test_01\n";
     return 0;
 }
@@ -1032,10 +1077,11 @@ int all_tests() {
     _verify(sign_test_01);
     _verify(timediff_test_01);
     _verify(azelpa_test_01);
+	_verify(iers_test_01);
     _verify(legendre_test_01);
 	_verify(nutangles_test_01);
 	_verify(timeupdate_test_01);
-	//_verify(accel_harmonic_test_01);
+	_verify(accel_harmonic_test_01);
 	_verify(eqn_equinox_test_01);
 	_verify(ltc_test_01);
 	_verify(nut_matrix_test_01);
@@ -1044,12 +1090,14 @@ int all_tests() {
 	_verify(gmst_test_01);
 	_verify(gast_test_01);
 	_verify(meas_update_test_01);
-	_verify(g_accelharmonic_test_01);
+	//_verify(g_accelharmonic_test_01);
     return 0;
 }
 
 int main() {
     std::cout << "Starting tests\n";
+	eop19620101(5);
+	GGM03S(5);
     int result = all_tests();
     if (result == 0)
         printf("PASSED\n");

@@ -1,8 +1,13 @@
 #include "..\include\global.hpp"
 
-//extern Matrix eopdata;
+Matrix eopdata;
+Matrix Cnm;
+Matrix Snm;
+Param AuxParam;
+Matrix PC;
+Matrix obs;
 
-void Matrix::eop19620101(int c) {
+void eop19620101(int c) {
 	Matrix eopdata = zeros(13, c);
 	
 	FILE *fid = fopen("../data/eop19620101.txt","r");
@@ -18,5 +23,27 @@ void Matrix::eop19620101(int c) {
 		&eopdata(8, j),&eopdata(9, j),&eopdata(10, j),&eopdata(11, j),&eopdata(12, j),&eopdata(13, j));
 	}
 	
+	fclose(fid);
+}
+
+void GGM03S(int n){
+	Cnm=zeros(n,n);
+	Snm=zeros(n,n);
+	FILE *fid = fopen("../data/GGM03S.txt","r");
+	if(fid==NULL){
+		cout << "Fail open GGM03S.txt file \n";
+		perror("Error");
+		exit(EXIT_FAILURE);
+	}
+	double aux;
+	for(int i=1;i<=n;i++){
+		for (int j=1;j<=i;j++){
+			fscanf(fid,"%lf %lf %lf %lf %lf %lf",
+				&aux,&aux,
+				&Cnm(i,j),&Snm(i,j),
+				&aux,&aux
+				);
+		}
+	}
 	fclose(fid);
 }

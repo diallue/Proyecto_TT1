@@ -4,8 +4,19 @@
 #include "..\include\matrix.hpp"
 #include <cmath>
 
-//extern Matrix eopdata;
+typedef struct{
+	double Mjd_UTC,Mjd_TT;
+	int n,m,sun,moon,planets;
+} Param;
+
+extern Param AuxParam;
+extern Matrix eopdata;
+extern Matrix Cnm;
+extern Matrix Snm;
+extern Matrix PC;
+extern Matrix obs;
 
 void eop19620101(int c);
+void GGM03S(int n);
 
 #endif
