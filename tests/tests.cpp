@@ -16,6 +16,16 @@
 #include "..\include\Legendre.hpp"
 #include "..\include\NutAngles.hpp"
 #include "..\include\TimeUpdate.hpp"
+#include "..\include\AccelHarmonic.hpp"
+#include "..\include\EqnEquinox.hpp"
+#include "..\include\LTC.hpp"
+#include "..\include\NutMatrix.hpp"
+#include "..\include\PoleMatrix.hpp"
+#include "..\include\PrecMatrix.hpp"
+#include "..\include\gmst.hpp"
+#include "..\include\gast.hpp"
+#include "..\include\MeasUpdate.hpp"
+#include "..\include\G_AccelHarmonic.hpp"
 #include <cstdio>
 #include <cmath>
 #include <iostream>
@@ -581,16 +591,40 @@ int legendre_test_01() {
     Legendre(n, m, fi, pnm, dpnm);
     
     Matrix expected_pnm(4, 4);
-    expected_pnm(1,1)=1.0;                     expected_pnm(1,2)=0.0;                     expected_pnm(1,3)=0.0;                     expected_pnm(1,4)=0.0;
-    expected_pnm(2,1)=1.22474487139159;        expected_pnm(2,2)=1.22474487139159;        expected_pnm(2,3)=0.0;                     expected_pnm(2,4)=0.0;
-    expected_pnm(3,1)=0.559016994374947;       expected_pnm(3,2)=1.93649167310371;        expected_pnm(3,3)=0.968245836551854;        expected_pnm(3,4)=0.0;
-    expected_pnm(4,1)=-0.467707173346743;      expected_pnm(4,2)=1.71846588560844;        expected_pnm(4,3)=1.81142209327368;        expected_pnm(4,4)=0.739509972887452;
+    expected_pnm(1,1)=1.0;                     
+	expected_pnm(1,2)=0.0;                     
+	expected_pnm(1,3)=0.0;                     
+	expected_pnm(1,4)=0.0;
+    expected_pnm(2,1)=1.22474487139159;        
+	expected_pnm(2,2)=1.22474487139159;        
+	expected_pnm(2,3)=0.0;                     
+	expected_pnm(2,4)=0.0;
+    expected_pnm(3,1)=0.559016994374947;       
+	expected_pnm(3,2)=1.93649167310371;        
+	expected_pnm(3,3)=0.968245836551854;        
+	expected_pnm(3,4)=0.0;
+    expected_pnm(4,1)=-0.467707173346743;      
+	expected_pnm(4,2)=1.71846588560844;        
+	expected_pnm(4,3)=1.81142209327368;        
+	expected_pnm(4,4)=0.739509972887452;
     
     Matrix expected_dpnm(4, 4);
-    expected_dpnm(1,1)=0.0;                    expected_dpnm(1,2)=0.0;                    expected_dpnm(1,3)=0.0;                    expected_dpnm(1,4)=0.0;
-    expected_dpnm(2,1)=1.22474487139159;       expected_dpnm(2,2)=-1.22474487139159;      expected_dpnm(2,3)=0.0;                    expected_dpnm(2,4)=0.0;
-    expected_dpnm(3,1)=3.35410196624968;       expected_dpnm(3,2)=7.44760245974182e-16;   expected_dpnm(3,3)=-1.93649167310371;      expected_dpnm(3,4)=0.0;
-    expected_dpnm(4,1)=4.20936456012068;       expected_dpnm(4,2)=4.00975373308636;       expected_dpnm(4,3)=-1.81142209327368;      expected_dpnm(4,4)=-2.21852991866236;
+    expected_dpnm(1,1)=0.0;                    
+	expected_dpnm(1,2)=0.0;                    
+	expected_dpnm(1,3)=0.0;                    
+	expected_dpnm(1,4)=0.0;
+    expected_dpnm(2,1)=1.22474487139159;       
+	expected_dpnm(2,2)=-1.22474487139159;      
+	expected_dpnm(2,3)=0.0;                    
+	expected_dpnm(2,4)=0.0;
+    expected_dpnm(3,1)=3.35410196624968;       
+	expected_dpnm(3,2)=7.44760245974182e-16;   
+	expected_dpnm(3,3)=-1.93649167310371;      
+	expected_dpnm(3,4)=0.0;
+    expected_dpnm(4,1)=4.20936456012068;       
+	expected_dpnm(4,2)=4.00975373308636;       
+	expected_dpnm(4,3)=-1.81142209327368;      
+	expected_dpnm(4,4)=-2.21852991866236;
         
     for (int i = 1; i <= 4; i++) {
         for (int j = 1; j <= 3; j++) {
@@ -659,6 +693,307 @@ int timeupdate_test_01() {
     return 0;
 }
 
+int accel_harmonic_test_01() {
+    std::cout << "Starting accel_harmonic_test_01\n";
+
+    Matrix r(3, 1);
+    r(1,1) = 7000e3; r(2,1) = 0; r(3,1) = 0;
+
+    Matrix E = Matrix::eye(3);
+    int n_max = 4;
+    int m_max = 4;
+    
+    // Redimensionar y llenar las matrices globales
+    Matrix Cnm = Matrix(n_max+2, m_max+2); // +2 porque se accede con índice n+1, m+1
+    Matrix Snm = Matrix(n_max+2, m_max+2);
+    
+    // Inicializar a cero
+    for (int i = 1; i <= n_max+1; i++) {
+        for (int j = 1; j <= m_max+1; j++) {
+            Cnm(i,j) = 0.0;
+            Snm(i,j) = 0.0;
+        }
+    }
+    
+    // Establecer coeficiente C30 (n=3, m=0)
+    Cnm(4, 1) = -2.539887e-6;  // Cnm(n+1, m+1)
+
+    Matrix a = AccelHarmonic(r, E, n_max, m_max);
+    
+    Matrix expected(3, 1);
+    expected(1,1) = -8.14571105963231;
+    expected(2,1) = 1.8418953912846e-05;
+    expected(3,1) = 6.13947378070986e-05;
+    
+    double tolerance = 1e-12;
+    _assert(a.n_row == expected.n_row);
+    _assert(a.n_column == expected.n_column);
+    for(int i = 1; i <= 3; i++) {
+        _assert(fabs(a(i,1) - expected(i,1)) < tolerance);
+    }
+
+    std::cout << "Finished accel_harmonic_test_01\n";
+    return 0;
+}
+
+int eqn_equinox_test_01() {
+    std::cout << "Starting eqn_equinox_test_01\n";
+    double Mjd_TT = 60000.0;
+    double expected = -4.12564567660139e-05;
+    double tolerance = 1e-12;
+
+    double EqE = EqnEquinox(Mjd_TT);
+
+    _assert(fabs(EqE - expected) < tolerance);
+
+    std::cout << "Finished eqn_equinox_test_01\n";
+    return 0;
+}
+
+int ltc_test_01() {
+    std::cout << "Starting ltc_test_01\n";
+    double lon = 0.56;
+    double lat = 0.76;
+    
+    Matrix M = LTC(lon, lat);
+    
+    Matrix expected(3, 3);
+    expected(1,1) = -0.531186197920883; 
+	expected(1,2) = 0.847255111013416;  
+	expected(1,3) = 0.0;
+    expected(2,1) = -0.583692215456663; 
+	expected(2,2) = -0.365945563094434; 
+	expected(2,3) = 0.724836010740905;
+    expected(3,1) = 0.614121014746807;  
+	expected(3,2) = 0.385022884661602;  
+	expected(3,3) = 0.688921445110551;
+    
+    _assert(M.n_row == expected.n_row);
+    _assert(M.n_column == expected.n_column);
+    
+    for(int i = 1; i <= 3; i++) {
+        for(int j = 1; j <= 3; j++) {
+            _assert(fabs(M(i,j) - expected(i,j)) < 1e-12);
+        }
+    }
+    
+    std::cout << "Finished ltc_test_01\n";
+    return 0;
+}
+
+int nut_matrix_test_01() {
+    std::cout << "Starting nut_matrix_test_01\n";
+    double Mjd_TT = 60000.0;
+    
+    Matrix NutMat = NutMatrix(Mjd_TT);
+    
+    Matrix expected(3, 3);
+    expected(1,1) = 0.999999998989028; 
+	expected(1,2) = 4.12564567521108e-05; 
+	expected(1,3) = 1.78842879763684e-05;
+    expected(2,1) = -4.12557859535431e-05; 
+	expected(2,2) = 0.999999998445613; 
+	expected(2,3) = -3.75064497141753e-05;
+    expected(3,1) = -1.78858353317898e-05; 
+	expected(3,2) = 3.75057118458533e-05; 
+	expected(3,3) = 0.999999999136709;
+    
+    _assert(NutMat.n_row == expected.n_row);
+    _assert(NutMat.n_column == expected.n_column);
+    
+    for(int i = 1; i <= 3; i++) {
+        for(int j = 1; j <= 3; j++) {
+            _assert(fabs(NutMat(i,j) - expected(i,j)) < 1e-12);
+        }
+    }
+    
+    std::cout << "Finished nut_matrix_test_01\n";
+    return 0;
+}
+
+int pole_matrix_test_01() {
+    std::cout << "Starting pole_matrix_test_01\n";
+    double xp = 0.0001;
+    double yp = 0.0002;
+    
+    Matrix PoleMat = PoleMatrix(xp, yp);
+    
+    Matrix expected(3, 3);
+    expected(1,1) = 0.999999995; 
+	expected(1,2) = 1.99999998333333e-08; 
+	expected(1,3) = 9.99999978333334e-05;
+    expected(2,1) = 0.0; 
+	expected(2,2) = 0.99999998; 
+	expected(2,3) = -0.000199999998666667;
+    expected(3,1) = -9.99999998333333e-05; 
+	expected(3,2) = 0.000199999997666667; 
+	expected(3,3) = 0.999999975;
+    
+    _assert(PoleMat.n_row == expected.n_row);
+    _assert(PoleMat.n_column == expected.n_column);
+    
+    for(int i = 1; i <= 3; i++) {
+        for(int j = 1; j <= 3; j++) {
+            _assert(fabs(PoleMat(i,j) - expected(i,j)) < 1e-12);
+        }
+    }
+    
+    std::cout << "Finished pole_matrix_test_01\n";
+    return 0;
+}
+
+int prec_matrix_test_01() {
+    std::cout << "Starting prec_matrix_test_01\n";
+    double Mjd_1 = 60000.0;
+    double Mjd_2 = 60100.0;
+    
+    Matrix PrecMat = PrecMatrix(Mjd_1, Mjd_2);
+    
+    Matrix expected(3, 3);
+    expected(1,1) = 0.999999997771519; 
+	expected(1,2) = -6.12316906343852e-05; 
+	expected(1,3) = -2.66015332954581e-05;
+    expected(2,1) = 6.12316906343852e-05; 
+	expected(2,2) = 0.99999999812534; 
+	expected(2,3) = -8.14428812735772e-10;
+    expected(3,1) = 2.66015332954582e-05; 
+	expected(3,2) = -8.14428046226956e-10; 
+	expected(3,3) = 0.999999999646179;
+    
+    _assert(PrecMat.n_row == expected.n_row);
+    _assert(PrecMat.n_column == expected.n_column);
+    
+    for(int i = 1; i <= 3; i++) {
+        for(int j = 1; j <= 3; j++) {
+            _assert(fabs(PrecMat(i,j) - expected(i,j)) < 1e-12);
+        }
+    }
+    
+    std::cout << "Finished prec_matrix_test_01\n";
+    return 0;
+}
+
+int gmst_test_01() {
+    std::cout << "Starting gmst_test_01\n";
+    double Mjd_UT1 = 60000.0;
+    double expected = 2.69831296672573;
+
+    double gmstime = gmst(Mjd_UT1);
+
+    _assert(fabs(gmstime - expected) < 1e-12);
+
+    std::cout << "Finished gmst_test_01\n";
+    return 0;
+}
+
+int gast_test_01() {
+    std::cout << "Starting gast_test_01\n";
+    double Mjd_UT1 = 60000.0;
+    double expected = 2.69827171026896;
+
+    double result = gast(Mjd_UT1);
+
+    _assert(fabs(result - expected) < 1e-12);
+
+    std::cout << "Finished gast_test_01\n";
+    return 0;
+}
+
+int meas_update_test_01() {
+    std::cout << "Starting meas_update_test_01\n";
+    
+    Matrix x(3, 1);
+    x(1,1) = 1.0; x(2,1) = 1.0; x(3,1) = 1.0;
+    
+    Matrix z(2, 1);
+    z(1,1) = 1.5; z(2,1) = 2.3;
+    
+    Matrix g(2, 1);
+    g(1,1) = 1.2; g(2,1) = 2.1;
+    
+    Matrix s(2, 1);
+    s(1,1) = 0.1; s(2,1) = 0.2;
+    
+    Matrix G(2, 3);
+    G(1,1) = 1.0; G(1,2) = 0.0; G(1,3) = 0.0;
+    G(2,1) = 0.0; G(2,2) = 1.0; G(2,3) = 0.0;
+    
+    Matrix P = Matrix::eye(3);
+    int n = 3;
+	
+    auto [K, x_new, P_new] = MeasUpdate(x, z, g, s, G, P, n);
+    
+    Matrix expected_K(3, 2);
+    expected_K(1,1) = 0.99009900990099; expected_K(1,2) = 0.0;
+    expected_K(2,1) = 0.0; expected_K(2,2) = 0.961538461538461;
+    expected_K(3,1) = 0.0; expected_K(3,2) = 0.0;
+    
+    Matrix expected_x(3, 1);
+    expected_x(1,1) = 1.2970297029703;
+    expected_x(2,1) = 1.19230769230769;
+    expected_x(3,1) = 1.0;
+    
+    Matrix expected_P(3, 3);
+    expected_P(1,1) = 0.00990099009900991; expected_P(1,2) = 0.0; expected_P(1,3) = 0.0;
+    expected_P(2,1) = 0.0; expected_P(2,2) = 0.0384615384615385; expected_P(2,3) = 0.0;
+    expected_P(3,1) = 0.0; expected_P(3,2) = 0.0; expected_P(3,3) = 1.0;
+    
+    _assert(K.n_row == expected_K.n_row);
+    _assert(K.n_column == expected_K.n_column);
+    _assert(x_new.n_row == expected_x.n_row);
+    _assert(x_new.n_column == expected_x.n_column);
+    _assert(P_new.n_row == expected_P.n_row);
+    _assert(P_new.n_column == expected_P.n_column);
+    
+    for(int i = 1; i <= K.n_row; i++) {
+        for(int j = 1; j <= K.n_column; j++) {
+            _assert(fabs(K(i,j) - expected_K(i,j)) < 1e-12);
+        }
+    }
+    
+    for(int i = 1; i <= x_new.n_row; i++) {
+        _assert(fabs(x_new(i,1) - expected_x(i,1)) < 1e-12);
+    }
+    
+    for(int i = 1; i <= P_new.n_row; i++) {
+        for(int j = 1; j <= P_new.n_column; j++) {
+            _assert(fabs(P_new(i,j) - expected_P(i,j)) < 1e-12);
+        }
+    }
+    
+    std::cout << "Finished meas_update_test_01\n";
+    return 0;
+}
+
+int g_accelharmonic_test_01() {
+    std::cout << "Starting g_accelharmonic_test_01\n";
+    
+    Matrix r(3, 1);
+    r(1,1) = 7000e3; r(2,1) = 0; r(3,1) = 0;
+    
+    Matrix U = Matrix::eye(3);
+    int n_max = 4;
+    int m_max = 4;
+    
+    Matrix G_expected(3, 3);
+    G_expected(1,1) = 2.33048175246608e-06; 
+	G_expected(1,2) = -1.88080662155699e-11; 
+	G_expected(1,3) = -5.18909359925601e-11;
+    G_expected(2,1) = -1.88040301950557e-11; 
+	G_expected(2,2) = -1.1636930401132e-06; 
+	G_expected(2,3) = -5.90145164317381e-12;
+    G_expected(3,1) = -5.18900588865551e-11; 
+	G_expected(3,2) = -5.90145164995007e-12; 
+	G_expected(3,3) = -1.16678871423606e-06;
+    
+    Matrix G = G_AccelHarmonic(r, U, n_max, m_max);
+    
+    _assert(m_equals(G, G_expected, 1e-15));
+    
+    std::cout << "Finished g_accelharmonic_test_01\n";
+    return 0;
+}
+
 int all_tests() {
     _verify(m_constructor_01);
     _verify(m_constructor_02);
@@ -700,6 +1035,16 @@ int all_tests() {
     _verify(legendre_test_01);
 	_verify(nutangles_test_01);
 	_verify(timeupdate_test_01);
+	//_verify(accel_harmonic_test_01);
+	_verify(eqn_equinox_test_01);
+	_verify(ltc_test_01);
+	_verify(nut_matrix_test_01);
+	_verify(pole_matrix_test_01);
+	_verify(prec_matrix_test_01);
+	_verify(gmst_test_01);
+	_verify(gast_test_01);
+	_verify(meas_update_test_01);
+	_verify(g_accelharmonic_test_01);
     return 0;
 }
 

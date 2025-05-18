@@ -7,6 +7,6 @@
 #include <cmath>
 #include <tuple>
 
-Matrix AccelHarmonic(const Matrix& r, const Matrix& E, int n_max, int m_max);
+Matrix AccelHarmonic(Matrix& r, Matrix& E, int n_max, int m_max);
 
 #endif
