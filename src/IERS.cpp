@@ -1,4 +1,5 @@
 #include "..\include\IERS.hpp"
+#include <iostream>
 
 tuple<double, double, double, double, double, double, double, double, double> IERS(Matrix& eop, double Mjd_UTC, char interp) {
     double x_pole, y_pole, UT1_UTC, LOD, dpsi, deps, dx_pole, dy_pole, TAI_UTC;
@@ -11,6 +12,14 @@ tuple<double, double, double, double, double, double, double, double, double> IE
                 i = j;
                 break;
             }
+        }
+        if (i == 0 || i > eop.n_column) {
+            std::cout << "IERS: No se encontró MJD " << mjd << " en eopdata\n";
+            exit(EXIT_FAILURE);
+        }
+        if (i + 1 > eop.n_column) {
+            std::cout << "IERS: No hay columna siguiente para interpolación (i=" << i << ", n_column=" << eop.n_column << ")\n";
+            exit(EXIT_FAILURE);
         }
         Matrix preeop = eop.extract_column(i);
         Matrix nexteop = eop.extract_column(i + 1);
@@ -41,16 +50,20 @@ tuple<double, double, double, double, double, double, double, double, double> IE
                 break;
             }
         }
-        eop = eop.extract_column(i);
-        x_pole  = eop(5, 1) / ARCS;
-        y_pole  = eop(6, 1) / ARCS;
-        UT1_UTC = eop(7, 1);                
-        LOD     = eop(8, 1);                 
-        dpsi    = eop(9, 1) / ARCS;
-        deps    = eop(10, 1) / ARCS;
-        dx_pole = eop(11, 1) / ARCS; 
-        dy_pole = eop(12, 1) / ARCS; 
-        TAI_UTC = eop(13, 1);                
+        if (i == 0 || i > eop.n_column) {
+            std::cout << "IERS: No se encontró MJD " << mjd << " en eopdata\n";
+            exit(EXIT_FAILURE);
+        }
+        Matrix eop_col = eop.extract_column(i);
+        x_pole  = eop_col(5, 1) / ARCS;
+        y_pole  = eop_col(6, 1) / ARCS;
+        UT1_UTC = eop_col(7, 1);                
+        LOD     = eop_col(8, 1);                 
+        dpsi    = eop_col(9, 1) / ARCS;
+        deps    = eop_col(10, 1) / ARCS;
+        dx_pole = eop_col(11, 1) / ARCS; 
+        dy_pole = eop_col(12, 1) / ARCS; 
+        TAI_UTC = eop_col(13, 1);                
     }
 
     return make_tuple(x_pole, y_pole, UT1_UTC, LOD, dpsi, deps, dx_pole, dy_pole, TAI_UTC);

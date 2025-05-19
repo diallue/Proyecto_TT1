@@ -1,12 +1,14 @@
 #include "..\include\JPL_Eph_DE430.hpp"
 
 tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix> JPL_Eph_DE430(double Mjd_TDB) {
-    double JD = Mjd_TDB + 2400000.5;
+    const double EMRAT = 81.30056907419062;
+    const double EMRAT1 = 1.0 / (1.0 + EMRAT);
 
+    double JD = Mjd_TDB + 2400000.5;
     int i = 0;
-    for (int j = 1; j <= PC.n_row; ++j) {
-        if (PC(j, 1) <= JD && JD <= PC(j, 2)) {
-            i = j;
+    for (int k = 1; k <= PC.n_row; ++k) {
+        if (PC(k, 1) <= JD && JD <= PC(k, 2)) {
+            i = k;
             break;
         }
     }
@@ -15,243 +17,228 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
     double t1 = PCtemp(1, 1) - 2400000.5;
     double dt = Mjd_TDB - t1;
 
-    Matrix Cx_Earth(1, 13), Cy_Earth(1, 13), Cz_Earth(1, 13);
-    for (int k = 1; k <= 13; ++k) {
-        Cx_Earth(1, k) = PCtemp(1, 231 + k - 1);
-        Cy_Earth(1, k) = PCtemp(1, 244 + k - 1);
-        Cz_Earth(1, k) = PCtemp(1, 257 + k - 1);
+    Matrix Cx_Earth(26, 1), Cy_Earth(26, 1), Cz_Earth(26, 1);
+    for (int k = 0; k < 13; ++k) {
+        Cx_Earth(k + 1, 1) = PCtemp(1, 231 + k);
+        Cy_Earth(k + 1, 1) = PCtemp(1, 244 + k);
+        Cz_Earth(k + 1, 1) = PCtemp(1, 257 + k);
     }
-    Matrix Cx_earth(1, 13), Cy_earth(1, 13), Cz_earth(1, 13);
-    for (int k = 1; k <= 13; ++k) {
-        Cx_earth(1, k) = PCtemp(1, 270 + k - 1);
-        Cy_earth(1, k) = PCtemp(1, 283 + k - 1);
-        Cz_earth(1, k) = PCtemp(1, 296 + k - 1);
+    for (int k = 0; k < 13; ++k) {
+        Cx_Earth(13 + k + 1, 1) = PCtemp(1, 270 + k);
+        Cy_Earth(13 + k + 1, 1) = PCtemp(1, 283 + k);
+        Cz_Earth(13 + k + 1, 1) = PCtemp(1, 296 + k);
     }
-    Cx_Earth = Cx_Earth.union_vector(Cx_earth, true);
-    Cy_Earth = Cy_Earth.union_vector(Cy_earth, true);
-    Cz_Earth = Cz_Earth.union_vector(Cz_earth, true);
-    int j = (0 <= dt && dt <= 16) ? 0 : 1;
-    double Mjd0 = t1 + 16 * j;
-    Matrix Cx_Earth_sub(1, 13), Cy_Earth_sub(1, 13), Cz_Earth_sub(1, 13);
-    for (int k = 1; k <= 13; ++k) {
-        Cx_Earth_sub(1, k) = Cx_Earth(1, 13 * j + k);
-        Cy_Earth_sub(1, k) = Cy_Earth(1, 13 * j + k);
-        Cz_Earth_sub(1, k) = Cz_Earth(1, 13 * j + k);
-    }
-    Matrix r_Earth = Cheb3D(Mjd_TDB, 13, Mjd0, Mjd0 + 16, Cx_Earth_sub, Cy_Earth_sub, Cz_Earth_sub) * 1e3;
 
-    Matrix Cx_Moon(1, 13), Cy_Moon(1, 13), Cz_Moon(1, 13);
-    for (int k = 1; k <= 13; ++k) {
-        Cx_Moon(1, k) = PCtemp(1, 441 + k - 1);
-        Cy_Moon(1, k) = PCtemp(1, 454 + k - 1);
-        Cz_Moon(1, k) = PCtemp(1, 467 + k - 1);
+    int j = (dt <= 16.0) ? 0 : 1;
+    double Mjd0 = t1 + 16.0 * j;
+    Matrix Cx_Earth_sub(13, 1), Cy_Earth_sub(13, 1), Cz_Earth_sub(13, 1);
+    for (int k = 0; k < 13; ++k) {
+        Cx_Earth_sub(k + 1, 1) = Cx_Earth(j * 13 + k + 1, 1);
+        Cy_Earth_sub(k + 1, 1) = Cy_Earth(j * 13 + k + 1, 1);
+        Cz_Earth_sub(k + 1, 1) = Cz_Earth(j * 13 + k + 1, 1);
     }
-    for (int i = 1; i <= 7; ++i) {
-        Matrix Cx_moon(1, 13), Cy_moon(1, 13), Cz_moon(1, 13);
-        for (int k = 1; k <= 13; ++k) {
-            Cx_moon(1, k) = PCtemp(1, 441 + 39 * i + k - 1);
-            Cy_moon(1, k) = PCtemp(1, 454 + 39 * i + k - 1);
-            Cz_moon(1, k) = PCtemp(1, 467 + 39 * i + k - 1);
+    Matrix r_Earth = Cheb3D(Mjd_TDB, 13, Mjd0, Mjd0 + 16.0, 
+                            Cx_Earth_sub, Cy_Earth_sub, Cz_Earth_sub) * 1e3;
+
+    Matrix Cx_Moon(104, 1), Cy_Moon(104, 1), Cz_Moon(104, 1);
+    for (int k = 0; k < 13; ++k) {
+        Cx_Moon(k + 1, 1) = PCtemp(1, 441 + k);
+        Cy_Moon(k + 1, 1) = PCtemp(1, 454 + k);
+        Cz_Moon(k + 1, 1) = PCtemp(1, 467 + k);
+    }
+    for (int m = 1; m <= 7; ++m) {
+        for (int k = 0; k < 13; ++k) {
+            Cx_Moon(13 * m + k + 1, 1) = PCtemp(1, 441 + 39 * m + k);
+            Cy_Moon(13 * m + k + 1, 1) = PCtemp(1, 454 + 39 * m + k);
+            Cz_Moon(13 * m + k + 1, 1) = PCtemp(1, 467 + 39 * m + k);
         }
-        Cx_Moon = Cx_Moon.union_vector(Cx_moon, true);
-        Cy_Moon = Cy_Moon.union_vector(Cy_moon, true);
-        Cz_Moon = Cz_Moon.union_vector(Cz_moon, true);
     }
-    if (0 <= dt && dt <= 4) j = 0;
-    else if (4 < dt && dt <= 8) j = 1;
-    else if (8 < dt && dt <= 12) j = 2;
-    else if (12 < dt && dt <= 16) j = 3;
-    else if (16 < dt && dt <= 20) j = 4;
-    else if (20 < dt && dt <= 24) j = 5;
-    else if (24 < dt && dt <= 28) j = 6;
-    else j = 7;
-    Mjd0 = t1 + 4 * j;
-    Matrix Cx_Moon_sub(1, 13), Cy_Moon_sub(1, 13), Cz_Moon_sub(1, 13);
-    for (int k = 1; k <= 13; ++k) {
-        Cx_Moon_sub(1, k) = Cx_Moon(1, 13 * j + k);
-        Cy_Moon_sub(1, k) = Cy_Moon(1, 13 * j + k);
-        Cz_Moon_sub(1, k) = Cz_Moon(1, 13 * j + k);
+    j = (dt <= 4.0) ? 0 : (dt <= 8.0) ? 1 : (dt <= 12.0) ? 2 : (dt <= 16.0) ? 3 :
+        (dt <= 20.0) ? 4 : (dt <= 24.0) ? 5 : (dt <= 28.0) ? 6 : 7;
+    Mjd0 = t1 + 4.0 * j;
+    Matrix Cx_Moon_sub(13, 1), Cy_Moon_sub(13, 1), Cz_Moon_sub(13, 1);
+    for (int k = 0; k < 13; ++k) {
+        Cx_Moon_sub(k + 1, 1) = Cx_Moon(j * 13 + k + 1, 1);
+        Cy_Moon_sub(k + 1, 1) = Cy_Moon(j * 13 + k + 1, 1);
+        Cz_Moon_sub(k + 1, 1) = Cz_Moon(j * 13 + k + 1, 1);
     }
-    Matrix r_Moon = Cheb3D(Mjd_TDB, 13, Mjd0, Mjd0 + 4, Cx_Moon_sub, Cy_Moon_sub, Cz_Moon_sub) * 1e3;
+    Matrix r_Moon = Cheb3D(Mjd_TDB, 13, Mjd0, Mjd0 + 4.0, 
+                           Cx_Moon_sub, Cy_Moon_sub, Cz_Moon_sub) * 1e3;
 
-    Matrix Cx_Sun(1, 11), Cy_Sun(1, 11), Cz_Sun(1, 11);
-    for (int k = 1; k <= 11; ++k) {
-        Cx_Sun(1, k) = PCtemp(1, 753 + k - 1);
-        Cy_Sun(1, k) = PCtemp(1, 764 + k - 1);
-        Cz_Sun(1, k) = PCtemp(1, 775 + k - 1);
+    Matrix Cx_Sun(22, 1), Cy_Sun(22, 1), Cz_Sun(22, 1);
+    for (int k = 0; k < 11; ++k) {
+        Cx_Sun(k + 1, 1) = PCtemp(1, 753 + k);
+        Cy_Sun(k + 1, 1) = PCtemp(1, 764 + k);
+        Cz_Sun(k + 1, 1) = PCtemp(1, 775 + k);
     }
-    Matrix Cx_sun(1, 11), Cy_sun(1, 11), Cz_sun(1, 11);
-    for (int k = 1; k <= 11; ++k) {
-        Cx_sun(1, k) = PCtemp(1, 786 + k - 1);
-        Cy_sun(1, k) = PCtemp(1, 797 + k - 1);
-        Cz_sun(1, k) = PCtemp(1, 808 + k - 1);
+    for (int k = 0; k < 11; ++k) {
+        Cx_Sun(11 + k + 1, 1) = PCtemp(1, 786 + k);
+        Cy_Sun(11 + k + 1, 1) = PCtemp(1, 797 + k);
+        Cz_Sun(11 + k + 1, 1) = PCtemp(1, 808 + k);
     }
-    Cx_Sun = Cx_Sun.union_vector(Cx_sun, true);
-    Cy_Sun = Cy_Sun.union_vector(Cy_sun, true);
-    Cz_Sun = Cz_Sun.union_vector(Cz_sun, true);
-    j = (0 <= dt && dt <= 16) ? 0 : 1;
-    Mjd0 = t1 + 16 * j;
-    Matrix Cx_Sun_sub(1, 11), Cy_Sun_sub(1, 11), Cz_Sun_sub(1, 11);
-    for (int k = 1; k <= 11; ++k) {
-        Cx_Sun_sub(1, k) = Cx_Sun(1, 11 * j + k);
-        Cy_Sun_sub(1, k) = Cy_Sun(1, 11 * j + k);
-        Cz_Sun_sub(1, k) = Cz_Sun(1, 11 * j + k);
+    j = (dt <= 16.0) ? 0 : 1;
+    Mjd0 = t1 + 16.0 * j;
+    Matrix Cx_Sun_sub(11, 1), Cy_Sun_sub(11, 1), Cz_Sun_sub(11, 1);
+    for (int k = 0; k < 11; ++k) {
+        Cx_Sun_sub(k + 1, 1) = Cx_Sun(j * 11 + k + 1, 1);
+        Cy_Sun_sub(k + 1, 1) = Cy_Sun(j * 11 + k + 1, 1);
+        Cz_Sun_sub(k + 1, 1) = Cz_Sun(j * 11 + k + 1, 1);
     }
-    Matrix r_Sun = Cheb3D(Mjd_TDB, 11, Mjd0, Mjd0 + 16, Cx_Sun_sub, Cy_Sun_sub, Cz_Sun_sub) * 1e3;
+    Matrix r_Sun = Cheb3D(Mjd_TDB, 11, Mjd0, Mjd0 + 16.0, 
+                          Cx_Sun_sub, Cy_Sun_sub, Cz_Sun_sub) * 1e3;
 
-    Matrix Cx_Mercury(1, 14), Cy_Mercury(1, 14), Cz_Mercury(1, 14);
-    for (int k = 1; k <= 14; ++k) {
-        Cx_Mercury(1, k) = PCtemp(1, 3 + k - 1);
-        Cy_Mercury(1, k) = PCtemp(1, 17 + k - 1);
-        Cz_Mercury(1, k) = PCtemp(1, 31 + k - 1);
+    Matrix Cx_Mercury(56, 1), Cy_Mercury(56, 1), Cz_Mercury(56, 1);
+    for (int k = 0; k < 14; ++k) {
+        Cx_Mercury(k + 1, 1) = PCtemp(1, 3 + k);
+        Cy_Mercury(k + 1, 1) = PCtemp(1, 17 + k);
+        Cz_Mercury(k + 1, 1) = PCtemp(1, 31 + k);
     }
-    for (int i = 1; i <= 3; ++i) {
-        Matrix Cx_mercury(1, 14), Cy_mercury(1, 14), Cz_mercury(1, 14);
-        for (int k = 1; k <= 14; ++k) {
-            Cx_mercury(1, k) = PCtemp(1, 3 + 42 * i + k - 1);
-            Cy_mercury(1, k) = PCtemp(1, 17 + 42 * i + k - 1);
-            Cz_mercury(1, k) = PCtemp(1, 31 + 42 * i + k - 1);
+    for (int m = 1; m <= 3; ++m) {
+        for (int k = 0; k < 14; ++k) {
+            Cx_Mercury(14 * m + k + 1, 1) = PCtemp(1, 3 + 42 * m + k);
+            Cy_Mercury(14 * m + k + 1, 1) = PCtemp(1, 17 + 42 * m + k);
+            Cz_Mercury(14 * m + k + 1, 1) = PCtemp(1, 31 + 42 * m + k);
         }
-        Cx_Mercury = Cx_Mercury.union_vector(Cx_mercury, true);
-        Cy_Mercury = Cy_Mercury.union_vector(Cy_mercury, true);
-        Cz_Mercury = Cz_Mercury.union_vector(Cz_mercury, true);
     }
-    if (0 <= dt && dt <= 8) j = 0;
-    else if (8 < dt && dt <= 16) j = 1;
-    else if (16 < dt && dt <= 24) j = 2;
-    else j = 3;
-    Mjd0 = t1 + 8 * j;
-    Matrix Cx_Mercury_sub(1, 14), Cy_Mercury_sub(1, 14), Cz_Mercury_sub(1, 14);
-    for (int k = 1; k <= 14; ++k) {
-        Cx_Mercury_sub(1, k) = Cx_Mercury(1, 14 * j + k);
-        Cy_Mercury_sub(1, k) = Cy_Mercury(1, 14 * j + k);
-        Cz_Mercury_sub(1, k) = Cz_Mercury(1, 14 * j + k);
+    j = (dt <= 8.0) ? 0 : (dt <= 16.0) ? 1 : (dt <= 24.0) ? 2 : 3;
+    Mjd0 = t1 + 8.0 * j;
+    Matrix Cx_Mercury_sub(14, 1), Cy_Mercury_sub(14, 1), Cz_Mercury_sub(14, 1);
+    for (int k = 0; k < 14; ++k) {
+        Cx_Mercury_sub(k + 1, 1) = Cx_Mercury(j * 14 + k + 1, 1);
+        Cy_Mercury_sub(k + 1, 1) = Cy_Mercury(j * 14 + k + 1, 1);
+        Cz_Mercury_sub(k + 1, 1) = Cz_Mercury(j * 14 + k + 1, 1);
     }
-    Matrix r_Mercury = Cheb3D(Mjd_TDB, 14, Mjd0, Mjd0 + 8, Cx_Mercury_sub, Cy_Mercury_sub, Cz_Mercury_sub) * 1e3;
+    Matrix r_Mercury = Cheb3D(Mjd_TDB, 14, Mjd0, Mjd0 + 8.0, 
+                              Cx_Mercury_sub, Cy_Mercury_sub, Cz_Mercury_sub) * 1e3;
 
-    Matrix Cx_Venus(1, 10), Cy_Venus(1, 10), Cz_Venus(1, 10);
-    for (int k = 1; k <= 10; ++k) {
-        Cx_Venus(1, k) = PCtemp(1, 171 + k - 1);
-        Cy_Venus(1, k) = PCtemp(1, 181 + k - 1);
-        Cz_Venus(1, k) = PCtemp(1, 191 + k - 1);
+    Matrix Cx_Venus(20, 1), Cy_Venus(20, 1), Cz_Venus(20, 1);
+    for (int k = 0; k < 10; ++k) {
+        Cx_Venus(k + 1, 1) = PCtemp(1, 171 + k);
+        Cy_Venus(k + 1, 1) = PCtemp(1, 181 + k);
+        Cz_Venus(k + 1, 1) = PCtemp(1, 191 + k);
     }
-    Matrix Cx_venus(1, 10), Cy_venus(1, 10), Cz_venus(1, 10);
-    for (int k = 1; k <= 10; ++k) {
-        Cx_venus(1, k) = PCtemp(1, 201 + k - 1);
-        Cy_venus(1, k) = PCtemp(1, 211 + k - 1);
-        Cz_venus(1, k) = PCtemp(1, 221 + k - 1);
+    for (int k = 0; k < 10; ++k) {
+        Cx_Venus(10 + k + 1, 1) = PCtemp(1, 201 + k);
+        Cy_Venus(10 + k + 1, 1) = PCtemp(1, 211 + k);
+        Cz_Venus(10 + k + 1, 1) = PCtemp(1, 221 + k);
     }
-    Cx_Venus = Cx_Venus.union_vector(Cx_venus, true);
-    Cy_Venus = Cy_Venus.union_vector(Cy_venus, true);
-    Cz_Venus = Cz_Venus.union_vector(Cz_venus, true);
-    j = (0 <= dt && dt <= 16) ? 0 : 1;
-    Mjd0 = t1 + 16 * j;
-    Matrix Cx_Venus_sub(1, 10), Cy_Venus_sub(1, 10), Cz_Venus_sub(1, 10);
-    for (int k = 1; k <= 10; ++k) {
-        Cx_Venus_sub(1, k) = Cx_Venus(1, 10 * j + k);
-        Cy_Venus_sub(1, k) = Cy_Venus(1, 10 * j + k);
-        Cz_Venus_sub(1, k) = Cz_Venus(1, 10 * j + k);
+    j = (dt <= 16.0) ? 0 : 1;
+    Mjd0 = t1 + 16.0 * j;
+    Matrix Cx_Venus_sub(10, 1), Cy_Venus_sub(10, 1), Cz_Venus_sub(10, 1);
+    for (int k = 0; k < 10; ++k) {
+        Cx_Venus_sub(k + 1, 1) = Cx_Venus(j * 10 + k + 1, 1);
+        Cy_Venus_sub(k + 1, 1) = Cy_Venus(j * 10 + k + 1, 1);
+        Cz_Venus_sub(k + 1, 1) = Cz_Venus(j * 10 + k + 1, 1);
     }
-    Matrix r_Venus = Cheb3D(Mjd_TDB, 10, Mjd0, Mjd0 + 16, Cx_Venus_sub, Cy_Venus_sub, Cz_Venus_sub) * 1e3;
+    Matrix r_Venus = Cheb3D(Mjd_TDB, 10, Mjd0, Mjd0 + 16.0, 
+                            Cx_Venus_sub, Cy_Venus_sub, Cz_Venus_sub) * 1e3;
 
-    Matrix Cx_Mars(1, 11), Cy_Mars(1, 11), Cz_Mars(1, 11);
-    for (int k = 1; k <= 11; ++k) {
-        Cx_Mars(1, k) = PCtemp(1, 309 + k - 1);
-        Cy_Mars(1, k) = PCtemp(1, 320 + k - 1);
-        Cz_Mars(1, k) = PCtemp(1, 331 + k - 1);
+    Matrix Cx_Mars(11, 1), Cy_Mars(11, 1), Cz_Mars(11, 1);
+    for (int k = 0; k < 11; ++k) {
+        Cx_Mars(k + 1, 1) = PCtemp(1, 309 + k);
+        Cy_Mars(k + 1, 1) = PCtemp(1, 320 + k);
+        Cz_Mars(k + 1, 1) = PCtemp(1, 331 + k);
     }
     j = 0;
     Mjd0 = t1;
-    Matrix Cx_Mars_sub(1, 11), Cy_Mars_sub(1, 11), Cz_Mars_sub(1, 11);
-    for (int k = 1; k <= 11; ++k) {
-        Cx_Mars_sub(1, k) = Cx_Mars(1, 11 * j + k);
-        Cy_Mars_sub(1, k) = Cy_Mars(1, 11 * j + k);
-        Cz_Mars_sub(1, k) = Cz_Mars(1, 11 * j + k);
-    }
-    Matrix r_Mars = Cheb3D(Mjd_TDB, 11, Mjd0, Mjd0 + 32, Cx_Mars_sub, Cy_Mars_sub, Cz_Mars_sub) * 1e3;
+    Matrix r_Mars = Cheb3D(Mjd_TDB, 11, Mjd0, Mjd0 + 32.0, Cx_Mars, Cy_Mars, Cz_Mars) * 1e3;
 
-    Matrix Cx_Jupiter(1, 8), Cy_Jupiter(1, 8), Cz_Jupiter(1, 8);
-    for (int k = 1; k <= 8; ++k) {
-        Cx_Jupiter(1, k) = PCtemp(1, 342 + k - 1);
-        Cy_Jupiter(1, k) = PCtemp(1, 350 + k - 1);
-        Cz_Jupiter(1, k) = PCtemp(1, 358 + k - 1);
+    Matrix Cx_Jupiter(8, 1), Cy_Jupiter(8, 1), Cz_Jupiter(8, 1);
+    for (int k = 0; k < 8; ++k) {
+        Cx_Jupiter(k + 1, 1) = PCtemp(1, 342 + k);
+        Cy_Jupiter(k + 1, 1) = PCtemp(1, 350 + k);
+        Cz_Jupiter(k + 1, 1) = PCtemp(1, 358 + k);
     }
     j = 0;
     Mjd0 = t1;
-    Matrix Cx_Jupiter_sub(1, 8), Cy_Jupiter_sub(1, 8), Cz_Jupiter_sub(1, 8);
-    for (int k = 1; k <= 8; ++k) {
-        Cx_Jupiter_sub(1, k) = Cx_Jupiter(1, 8 * j + k);
-        Cy_Jupiter_sub(1, k) = Cy_Jupiter(1, 8 * j + k);
-        Cz_Jupiter_sub(1, k) = Cz_Jupiter(1, 8 * j + k);
-    }
-    Matrix r_Jupiter = Cheb3D(Mjd_TDB, 8, Mjd0, Mjd0 + 32, Cx_Jupiter_sub, Cy_Jupiter_sub, Cz_Jupiter_sub) * 1e3;
+    Matrix r_Jupiter = Cheb3D(Mjd_TDB, 8, Mjd0, Mjd0 + 32.0, Cx_Jupiter, Cy_Jupiter, Cz_Jupiter) * 1e3;
 
-    Matrix Cx_Saturn(1, 7), Cy_Saturn(1, 7), Cz_Saturn(1, 7);
-    for (int k = 1; k <= 7; ++k) {
-        Cx_Saturn(1, k) = PCtemp(1, 366 + k - 1);
-        Cy_Saturn(1, k) = PCtemp(1, 373 + k - 1);
-        Cz_Saturn(1, k) = PCtemp(1, 380 + k - 1);
+    Matrix Cx_Saturn(7, 1), Cy_Saturn(7, 1), Cz_Saturn(7, 1);
+    for (int k = 0; k < 7; ++k) {
+        Cx_Saturn(k + 1, 1) = PCtemp(1, 366 + k);
+        Cy_Saturn(k + 1, 1) = PCtemp(1, 373 + k);
+        Cz_Saturn(k + 1, 1) = PCtemp(1, 380 + k);
     }
     j = 0;
     Mjd0 = t1;
-    Matrix Cx_Saturn_sub(1, 7), Cy_Saturn_sub(1, 7), Cz_Saturn_sub(1, 7);
-    for (int k = 1; k <= 7; ++k) {
-        Cx_Saturn_sub(1, k) = Cx_Saturn(1, 7 * j + k);
-        Cy_Saturn_sub(1, k) = Cx_Saturn(1, 7 * j + k);
-        Cz_Saturn_sub(1, k) = Cz_Saturn(1, 7 * j + k);
-    }
-    Matrix r_Saturn = Cheb3D(Mjd_TDB, 7, Mjd0, Mjd0 + 32, Cx_Saturn_sub, Cy_Saturn_sub, Cz_Saturn_sub) * 1e3;
+    Matrix r_Saturn = Cheb3D(Mjd_TDB, 7, Mjd0, Mjd0 + 32.0, Cx_Saturn, Cy_Saturn, Cz_Saturn) * 1e3;
 
-    Matrix Cx_Uranus(1, 6), Cy_Uranus(1, 6), Cz_Uranus(1, 6);
-    for (int k = 1; k <= 6; ++k) {
-        Cx_Uranus(1, k) = PCtemp(1, 387 + k - 1);
-        Cy_Uranus(1, k) = PCtemp(1, 393 + k - 1);
-        Cz_Uranus(1, k) = PCtemp(1, 399 + k - 1);
+    Matrix Cx_Uranus(6, 1), Cy_Uranus(6, 1), Cz_Uranus(6, 1);
+    for (int k = 0; k < 6; ++k) {
+        Cx_Uranus(k + 1, 1) = PCtemp(1, 387 + k);
+        Cy_Uranus(k + 1, 1) = PCtemp(1, 393 + k);
+        Cz_Uranus(k + 1, 1) = PCtemp(1, 399 + k);
     }
     j = 0;
     Mjd0 = t1;
-    Matrix Cx_Uranus_sub(1, 6), Cy_Uranus_sub(1, 6), Cz_Uranus_sub(1, 6);
-    for (int k = 1; k <= 6; ++k) {
-        Cx_Uranus_sub(1, k) = Cx_Uranus(1, 6 * j + k);
-        Cy_Uranus_sub(1, k) = Cx_Uranus(1, 6 * j + k);
-        Cz_Uranus_sub(1, k) = Cz_Uranus(1, 6 * j + k);
-    }
-    Matrix r_Uranus = Cheb3D(Mjd_TDB, 6, Mjd0, Mjd0 + 32, Cx_Uranus_sub, Cy_Uranus_sub, Cz_Uranus_sub) * 1e3;
+    Matrix r_Uranus = Cheb3D(Mjd_TDB, 6, Mjd0, Mjd0 + 32.0, Cx_Uranus, Cy_Uranus, Cz_Uranus) * 1e3;
 
-    Matrix Cx_Neptune(1, 6), Cy_Neptune(1, 6), Cz_Neptune(1, 6);
-    for (int k = 1; k <= 6; ++k) {
-        Cx_Neptune(1, k) = PCtemp(1, 405 + k - 1);
-        Cy_Neptune(1, k) = PCtemp(1, 411 + k - 1);
-        Cz_Neptune(1, k) = PCtemp(1, 417 + k - 1);
+    Matrix Cx_Neptune(6, 1), Cy_Neptune(6, 1), Cz_Neptune(6, 1);
+    for (int k = 0; k < 6; ++k) {
+        Cx_Neptune(k + 1, 1) = PCtemp(1, 405 + k);
+        Cy_Neptune(k + 1, 1) = PCtemp(1, 411 + k);
+        Cz_Neptune(k + 1, 1) = PCtemp(1, 417 + k);
     }
     j = 0;
     Mjd0 = t1;
-    Matrix Cx_Neptune_sub(1, 6), Cy_Neptune_sub(1, 6), Cz_Neptune_sub(1, 6);
-    for (int k = 1; k <= 6; ++k) {
-        Cx_Neptune_sub(1, k) = Cx_Neptune(1, 6 * j + k);
-        Cy_Neptune_sub(1, k) = Cx_Neptune(1, 6 * j + k);
-        Cz_Neptune_sub(1, k) = Cz_Neptune(1, 6 * j + k);
-    }
-    Matrix r_Neptune = Cheb3D(Mjd_TDB, 6, Mjd0, Mjd0 + 32, Cx_Neptune_sub, Cy_Neptune_sub, Cz_Neptune_sub) * 1e3;
+    Matrix r_Neptune = Cheb3D(Mjd_TDB, 6, Mjd0, Mjd0 + 32.0, Cx_Neptune, Cy_Neptune, Cz_Neptune) * 1e3;
 
-    Matrix Cx_Pluto(1, 6), Cy_Pluto(1, 6), Cz_Pluto(1, 6);
-    for (int k = 1; k <= 6; ++k) {
-        Cx_Pluto(1, k) = PCtemp(1, 423 + k - 1);
-        Cy_Pluto(1, k) = PCtemp(1, 429 + k - 1);
-        Cz_Pluto(1, k) = PCtemp(1, 435 + k - 1);
+    Matrix Cx_Pluto(6, 1), Cy_Pluto(6, 1), Cz_Pluto(6, 1);
+    for (int k = 0; k < 6; ++k) {
+        Cx_Pluto(k + 1, 1) = PCtemp(1, 423 + k);
+        Cy_Pluto(k + 1, 1) = PCtemp(1, 429 + k);
+        Cz_Pluto(k + 1, 1) = PCtemp(1, 435 + k);
     }
     j = 0;
     Mjd0 = t1;
-    Matrix Cx_Pluto_sub(1, 6), Cy_Pluto_sub(1, 6), Cz_Pluto_sub(1, 6);
-    for (int k = 1; k <= 6; ++k) {
-        Cx_Pluto_sub(1, k) = Cx_Pluto(1, 6 * j + k);
-        Cy_Pluto_sub(1, k) = Cx_Pluto(1, 6 * j + k);
-        Cz_Pluto_sub(1, k) = Cz_Pluto(1, 6 * j + k);
-    }
-    Matrix r_Pluto = Cheb3D(Mjd_TDB, 6, Mjd0, Mjd0 + 32, Cx_Pluto_sub, Cy_Pluto_sub, Cz_Pluto_sub) * 1e3;
+    Matrix r_Pluto = Cheb3D(Mjd_TDB, 6, Mjd0, Mjd0 + 32.0, Cx_Pluto, Cy_Pluto, Cz_Pluto) * 1e3;
 
-    const double EMRAT = 81.30056907419062;
-    const double EMRAT1 = 1.0 / (1.0 + EMRAT);
+    Matrix Cx_Nutations(40, 1), Cy_Nutations(40, 1);
+    for (int k = 0; k < 10; ++k) {
+        Cx_Nutations(k + 1, 1) = PCtemp(1, 819 + k);
+        Cy_Nutations(k + 1, 1) = PCtemp(1, 829 + k);
+    }
+    for (int m = 1; m <= 3; ++m) {
+        for (int k = 0; k < 10; ++k) {
+            Cx_Nutations(10 * m + k + 1, 1) = PCtemp(1, 819 + 20 * m + k);
+            Cy_Nutations(10 * m + k + 1, 1) = PCtemp(1, 829 + 20 * m + k);
+        }
+    }
+    j = (dt <= 8.0) ? 0 : (dt <= 16.0) ? 1 : (dt <= 24.0) ? 2 : 3;
+    Mjd0 = t1 + 8.0 * j;
+    Matrix Cx_Nutations_sub(10, 1), Cy_Nutations_sub(10, 1);
+    for (int k = 0; k < 10; ++k) {
+        Cx_Nutations_sub(k + 1, 1) = Cx_Nutations(j * 10 + k + 1, 1);
+        Cy_Nutations_sub(k + 1, 1) = Cy_Nutations(j * 10 + k + 1, 1);
+    }
+    Matrix Cz_Nutations_sub(10, 1); 
+    Matrix Nutations = Cheb3D(Mjd_TDB, 10, Mjd0, Mjd0 + 8.0, 
+                              Cx_Nutations_sub, Cy_Nutations_sub, Cz_Nutations_sub);
+
+    Matrix Cx_Librations(40, 1), Cy_Librations(40, 1), Cz_Librations(40, 1);
+    for (int k = 0; k < 10; ++k) {
+        Cx_Librations(k + 1, 1) = PCtemp(1, 899 + k);
+        Cy_Librations(k + 1, 1) = PCtemp(1, 909 + k);
+        Cz_Librations(k + 1, 1) = PCtemp(1, 919 + k);
+    }
+    for (int m = 1; m <= 3; ++m) {
+        for (int k = 0; k < 10; ++k) {
+            Cx_Librations(10 * m + k + 1, 1) = PCtemp(1, 899 + 30 * m + k);
+            Cy_Librations(10 * m + k + 1, 1) = PCtemp(1, 909 + 30 * m + k);
+            Cz_Librations(10 * m + k + 1, 1) = PCtemp(1, 919 + 30 * m + k);
+        }
+    }
+    j = (dt <= 8.0) ? 0 : (dt <= 16.0) ? 1 : (dt <= 24.0) ? 2 : 3;
+    Mjd0 = t1 + 8.0 * j;
+    Matrix Cx_Librations_sub(10, 1), Cy_Librations_sub(10, 1), Cz_Librations_sub(10, 1);
+    for (int k = 0; k < 10; ++k) {
+        Cx_Librations_sub(k + 1, 1) = Cx_Librations(j * 10 + k + 1, 1);
+        Cy_Librations_sub(k + 1, 1) = Cy_Librations(j * 10 + k + 1, 1);
+        Cz_Librations_sub(k + 1, 1) = Cz_Librations(j * 10 + k + 1, 1);
+    }
+    Matrix Librations = Cheb3D(Mjd_TDB, 10, Mjd0, Mjd0 + 8.0, 
+                               Cx_Librations_sub, Cy_Librations_sub, Cz_Librations_sub);
+
     r_Earth = r_Earth - r_Moon * EMRAT1;
     r_Mercury = r_Mercury - r_Earth;
     r_Venus = r_Venus - r_Earth;

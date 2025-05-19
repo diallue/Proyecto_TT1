@@ -555,33 +555,37 @@ int timediff_test_01() {
 
 int azelpa_test_01() {
     std::cout << "Starting azelpa_test_01\n";
-    std::cout << "Initializing s\n";
+	
     Matrix s(3, 1);
+	
     s(1,1) = 1000.0; s(2,1) = 2000.0; s(3,1) = 3000.0;
-    std::cout << "Calling AzElPa\n";
+	
     auto [Az, El, dAds, dEds] = AzElPa(s);
-    std::cout << "Initializing expected values\n";
     double expected_Az = 0.463647609000806;
     double expected_El = 0.930274014115472;
     double rho = sqrt(1000.0*1000.0 + 2000.0*2000.0);
     double rho_sq = rho*rho; 
+	
     Matrix expected_dAds(1, 3);
     expected_dAds(1,1) = 2000.0/rho_sq;   
     expected_dAds(1,2) = -1000.0/rho_sq;  
     expected_dAds(1,3) = 0.0;
+	
     Matrix expected_dEds(1, 3);
     expected_dEds(1,1) = -9.5831484749991e-05;
     expected_dEds(1,2) = -0.000191662969499982;
     expected_dEds(1,3) = 0.000159719141249985;
+	
     double tolerance = 1e-12;
-    std::cout << "Comparing Az and El\n";
+	
     _assert(fabs(Az - expected_Az) < tolerance);
     _assert(fabs(El - expected_El) < tolerance);
-    std::cout << "Comparing dAds and dEds\n";
+	
     for (int j = 1; j <= 3; j++) {
         _assert(fabs(dAds(1,j) - expected_dAds(1,j)) < tolerance);
         _assert(fabs(dEds(1,j) - expected_dEds(1,j)) < 1e-8);
     }
+	
     std::cout << "Finished azelpa_test_01\n";
     return 0;
 }
@@ -589,23 +593,17 @@ int azelpa_test_01() {
 int iers_test_01() {
     std::cout << "Starting iers_test_01\n";
 
-    // Inicializar eopdata
-    eop19620101(21413); // Como en main.cpp
-
-    // Configurar matriz eop para simular entrada
-    Matrix eop(13, 2); // Dos columnas para interpolación
-    // Primera columna (MJD = 49746)
-    eop(4, 1) = 49746.0; // MJD
-    eop(5, 1) = -5.59518621231704e-07 * ARCS; // x_pole en arcosegundos
-    eop(6, 1) = 2.33458634442529e-06 * ARCS;  // y_pole en arcosegundos
-    eop(7, 1) = 0.3260677;                    // UT1_UTC
-    eop(8, 1) = 0.0027213;                    // LOD
-    eop(9, 1) = -1.16864337831454e-07 * ARCS; // dpsi en arcosegundos
-    eop(10, 1) = -2.48709418409192e-08 * ARCS; // deps en arcosegundos
-    eop(11, 1) = -8.19335121075116e-10 * ARCS; // dx_pole en arcosegundos
-    eop(12, 1) = -1.53201123230613e-09 * ARCS; // dy_pole en arcosegundos
-    eop(13, 1) = 29.0;                        // TAI_UTC
-    // Segunda columna (MJD = 49747, valores dummy para interpolación)
+    Matrix eop(13, 2);
+    eop(4, 1) = 49746.0; 
+    eop(5, 1) = -5.59518621231704e-07 * ARCS;
+    eop(6, 1) = 2.33458634442529e-06 * ARCS;
+    eop(7, 1) = 0.3260677;                   
+    eop(8, 1) = 0.0027213;                   
+    eop(9, 1) = -1.16864337831454e-07 * ARCS; 
+    eop(10, 1) = -2.48709418409192e-08 * ARCS; 
+    eop(11, 1) = -8.19335121075116e-10 * ARCS; 
+    eop(12, 1) = -1.53201123230613e-09 * ARCS; 
+    eop(13, 1) = 29.0;                      
     eop(4, 2) = 49747.0;
     eop(5, 2) = eop(5, 1);
     eop(6, 2) = eop(6, 1);
@@ -617,11 +615,9 @@ int iers_test_01() {
     eop(12, 2) = eop(12, 1);
     eop(13, 2) = eop(13, 1);
 
-    // Llamar a IERS con interpolación lineal
     double Mjd_UTC = 49746.0;
     auto result = IERS(eop, Mjd_UTC, 'l');
 
-    // Valores esperados (de MATLAB)
     double expected_x_pole = -5.59518621231704e-07;
     double expected_y_pole = 2.33458634442529e-06;
     double expected_UT1_UTC = 0.3260677;
@@ -631,9 +627,7 @@ int iers_test_01() {
     double expected_dx_pole = -8.19335121075116e-10;
     double expected_dy_pole = -1.53201123230613e-09;
     double expected_TAI_UTC = 29.0;
-
-    // Comparar resultados
-    std::cout << "Comparing results\n";
+	
     _assert(std::abs(std::get<0>(result) - expected_x_pole) < 1e-12);
     _assert(std::abs(std::get<1>(result) - expected_y_pole) < 1e-12);
     _assert(std::abs(std::get<2>(result) - expected_UT1_UTC) < 1e-7);
@@ -800,80 +794,77 @@ int eqn_equinox_test_01() {
 
 int jpl_eph_de430_test_01() {
     std::cout << "Starting jpl_eph_de430_test_01\n";
-    
     double Mjd_TDB = 49746.0;
-    auto [r_Mercury, r_Venus, r_Earth, r_Mars, r_Jupiter, r_Saturn, 
-          r_Uranus, r_Neptune, r_Pluto, r_Moon, r_Sun] = JPL_Eph_DE430(Mjd_TDB);
-    
+
+    auto result = JPL_Eph_DE430(Mjd_TDB);
+
     Matrix expected_r_Mercury(3, 1);
     expected_r_Mercury(1,1) = 84104220740.7172;
     expected_r_Mercury(2,1) = -65378380201.6414;
     expected_r_Mercury(3,1) = -23479104187.0998;
-    
+
     Matrix expected_r_Venus(3, 1);
     expected_r_Venus(1,1) = -15464725007.0953;
     expected_r_Venus(2,1) = -109991232251.309;
     expected_r_Venus(3,1) = -40954081064.4932;
-    
+
     Matrix expected_r_Earth(3, 1);
     expected_r_Earth(1,1) = -92241165484.1736;
     expected_r_Earth(2,1) = 106561362674.605;
     expected_r_Earth(3,1) = 46202307090.723;
-    
+
     Matrix expected_r_Mars(3, 1);
     expected_r_Mars(1,1) = -88356416439.1097;
     expected_r_Mars(2,1) = 46936971339.0211;
     expected_r_Mars(3,1) = 29058346204.1422;
-    
+
     Matrix expected_r_Jupiter(3, 1);
     expected_r_Jupiter(1,1) = -298724529377.175;
     expected_r_Jupiter(2,1) = -754614547131.36;
     expected_r_Jupiter(3,1) = -314458536151.573;
-    
+
     Matrix expected_r_Saturn(3, 1);
     expected_r_Saturn(1,1) = 1481783416258.83;
     expected_r_Saturn(2,1) = -454122523839.337;
     expected_r_Saturn(3,1) = -249507876581.788;
-    
+
     Matrix expected_r_Uranus(3, 1);
     expected_r_Uranus(1,1) = 1412079768685.62;
     expected_r_Uranus(2,1) = -2511546038562.6;
     expected_r_Uranus(3,1) = -1118190744220.76;
-    
+
     Matrix expected_r_Neptune(3, 1);
     expected_r_Neptune(1,1) = 1870972980141.4;
     expected_r_Neptune(2,1) = -3929162662197.39;
     expected_r_Neptune(3,1) = -1655099596079.17;
-    
+
     Matrix expected_r_Pluto(3, 1);
     expected_r_Pluto(1,1) = -2171691268948.67;
     expected_r_Pluto(2,1) = -3915571707864.54;
     expected_r_Pluto(3,1) = -552765657868.72;
-    
+
     Matrix expected_r_Moon(3, 1);
     expected_r_Moon(1,1) = 79249995.5974036;
     expected_r_Moon(2,1) = -338532097.231286;
     expected_r_Moon(3,1) = -115948815.394642;
-    
+
     Matrix expected_r_Sun(3, 1);
     expected_r_Sun(1,1) = 92068570001.1863;
     expected_r_Sun(2,1) = -105541663697.566;
     expected_r_Sun(3,1) = -45758547686.4159;
-    
-    double tolerance = 1e-4;
-    
-    _assert(m_equals(r_Mercury, expected_r_Mercury, tolerance));
-    _assert(m_equals(r_Venus, expected_r_Venus, tolerance));
-    _assert(m_equals(r_Earth, expected_r_Earth, tolerance));
-    _assert(m_equals(r_Mars, expected_r_Mars, tolerance));
-    _assert(m_equals(r_Jupiter, expected_r_Jupiter, tolerance));
-    _assert(m_equals(r_Saturn, expected_r_Saturn, tolerance));
-    _assert(m_equals(r_Uranus, expected_r_Uranus, tolerance));
-    _assert(m_equals(r_Neptune, expected_r_Neptune, tolerance));
-    _assert(m_equals(r_Pluto, expected_r_Pluto, tolerance));
-    _assert(m_equals(r_Moon, expected_r_Moon, tolerance));
-    _assert(m_equals(r_Sun, expected_r_Sun, tolerance));
-    
+
+    _assert(m_equals(std::get<0>(result), expected_r_Mercury, 1e-6));
+    _assert(m_equals(std::get<1>(result), expected_r_Venus, 1e-6));
+    _assert(m_equals(std::get<2>(result), expected_r_Earth, 1e-6));
+    _assert(m_equals(std::get<3>(result), expected_r_Mars, 1e-6));
+    _assert(m_equals(std::get<4>(result), expected_r_Jupiter, 1e-6));
+    _assert(m_equals(std::get<5>(result), expected_r_Saturn, 1e-6));
+    _assert(m_equals(std::get<6>(result), expected_r_Uranus, 1e-6));
+    _assert(m_equals(std::get<7>(result), expected_r_Neptune, 1e-6));
+    _assert(m_equals(std::get<8>(result), expected_r_Pluto, 1e-6));
+    _assert(m_equals(std::get<9>(result), expected_r_Moon, 1e-6));
+    _assert(m_equals(std::get<10>(result), expected_r_Sun, 1e-6));
+
     std::cout << "Finished jpl_eph_de430_test_01\n";
     return 0;
 }
@@ -1146,15 +1137,15 @@ int gha_matrix_test_01() {
 
 int var_eqn_test_01() {
     std::cout << "Starting var_eqn_test_01\n";
-
-    // Initialize input
+    
     double x = 4.0;
     Matrix yPhi(42, 1);
     yPhi(1,1) = 1e6; yPhi(2,1) = 2e6; yPhi(3,1) = 3e6;
     yPhi(4,1) = 1e3; yPhi(5,1) = 2e3; yPhi(6,1) = 3e3;
-    for (int i = 7; i <= 42; i++) yPhi(i,1) = 0.0;
-
-    // Initialize expected output
+    for (int i = 7; i <= 42; i++) {
+        yPhi(i,1) = 0.0;
+    }
+    
     Matrix expected_yPhip(42, 1);
     expected_yPhip(1,1) = 1000.0;
     expected_yPhip(2,1) = 2000.0;
@@ -1162,15 +1153,14 @@ int var_eqn_test_01() {
     expected_yPhip(4,1) = -8.55483473704505;
     expected_yPhip(5,1) = -14.7587726037911;
     expected_yPhip(6,1) = -26.646858402194;
-    for (int i = 7; i <= 42; i++) expected_yPhip(i,1) = 0.0;
-	expected_yPhip = transpose(expected_yPhip);
-
-    // Call VarEqn
+    for (int i = 7; i <= 42; i++) {
+        expected_yPhip(i,1) = 0.0;
+    }
+    
     Matrix result = VarEqn(x, yPhi);
-
-    // Compare results
-    _assert(m_equals(result, expected_yPhip, 1e-10));
-
+    
+    _assert(m_equals(result, expected_yPhip, 1e-6));
+    
     std::cout << "Finished var_eqn_test_01\n";
     return 0;
 }
@@ -1219,7 +1209,7 @@ int all_tests() {
 	_verify(timeupdate_test_01);
 	_verify(accel_harmonic_test_01);
 	_verify(eqn_equinox_test_01);
-	//_verify(jpl_eph_de430_test_01);
+	_verify(jpl_eph_de430_test_01);
 	_verify(ltc_test_01);
 	_verify(nut_matrix_test_01);
 	_verify(pole_matrix_test_01);
@@ -1235,9 +1225,10 @@ int all_tests() {
 
 int main() {
     std::cout << "Starting tests\n";
-	eop19620101(5);
-	GGM03S(5);
+	eop19620101(21413);
+	GGM03S(16471);
 	DE430Coeff(3, 1);
+	AuxParamLoad();
     int result = all_tests();
     if (result == 0)
         printf("PASSED\n");

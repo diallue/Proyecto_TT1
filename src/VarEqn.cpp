@@ -1,4 +1,5 @@
 #include "..\include\VarEqn.hpp"
+#include <iostream>
 
 Matrix VarEqn(double x, Matrix& yPhi) {
     auto [x_pole, y_pole, UT1_UTC, LOD, dpsi, deps, dx_pole, dy_pole, TAI_UTC] = 
@@ -9,19 +10,37 @@ Matrix VarEqn(double x, Matrix& yPhi) {
     double Mjd_UT1 = AuxParam.Mjd_TT + (UT1_UTC - TT_UTC)/86400.0;
 
     Matrix P = PrecMatrix(MJD_J2000, AuxParam.Mjd_TT + x/86400.0);
-    Matrix N = NutMatrix(AuxParam.Mjd_TT + x/86400.0);
-    Matrix T = N * P;
-    Matrix E = PoleMatrix(x_pole, y_pole) * GHAMatrix(Mjd_UT1) * T;
 
-    Matrix r = yPhi.extract_vector(1, 3, false);
-    Matrix v = yPhi.extract_vector(4, 6, false);
+    Matrix N = NutMatrix(AuxParam.Mjd_TT + x/86400.0);
+
+    Matrix T = P * N;
+
+    Matrix E = PoleMatrix(x_pole, y_pole);
+
+    E = E * GHAMatrix(Mjd_UT1) * T;
+
+    Matrix r(3, 1);
+    r(1,1) = yPhi(1,1);
+    r(2,1) = yPhi(2,1); 
+    r(3,1) = yPhi(3,1); 
+    
+    Matrix v(3, 1);
+    v(1,1) = yPhi(4,1); 
+    v(2,1) = yPhi(5,1); 
+    v(3,1) = yPhi(6,1);
     
     Matrix Phi(6, 6);
     for (int j = 1; j <= 6; ++j) {
-        Phi.assign_column(j, yPhi.extract_vector(6*j+1, 6*j+6, false));
+        Matrix col(6, 1);
+        for (int i = 1; i <= 6; ++i) {
+            int index = 6*(j-1) + i + 6;
+            col(i,1) = yPhi(index, 1);
+        }
+        Phi.assign_column(j, col);
     }
 
     Matrix a = AccelHarmonic(r, E, AuxParam.n, AuxParam.m);
+
     Matrix G = G_AccelHarmonic(r, E, AuxParam.n, AuxParam.m);
 
     Matrix yPhip(42, 1);
