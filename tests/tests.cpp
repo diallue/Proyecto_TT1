@@ -20,6 +20,7 @@
 #include "..\include\TimeUpdate.hpp"
 #include "..\include\AccelHarmonic.hpp"
 #include "..\include\EqnEquinox.hpp"
+#include "..\include\JPL_Eph_DE430.hpp"
 #include "..\include\LTC.hpp"
 #include "..\include\NutMatrix.hpp"
 #include "..\include\PoleMatrix.hpp"
@@ -28,6 +29,8 @@
 #include "..\include\gast.hpp"
 #include "..\include\MeasUpdate.hpp"
 #include "..\include\G_AccelHarmonic.hpp"
+#include "..\include\GHAMatrix.hpp"
+#include "..\include\VarEqn.hpp"
 #include <cstdio>
 #include <cmath>
 #include <iostream>
@@ -795,6 +798,86 @@ int eqn_equinox_test_01() {
     return 0;
 }
 
+int jpl_eph_de430_test_01() {
+    std::cout << "Starting jpl_eph_de430_test_01\n";
+    
+    double Mjd_TDB = 49746.0;
+    auto [r_Mercury, r_Venus, r_Earth, r_Mars, r_Jupiter, r_Saturn, 
+          r_Uranus, r_Neptune, r_Pluto, r_Moon, r_Sun] = JPL_Eph_DE430(Mjd_TDB);
+    
+    Matrix expected_r_Mercury(3, 1);
+    expected_r_Mercury(1,1) = 84104220740.7172;
+    expected_r_Mercury(2,1) = -65378380201.6414;
+    expected_r_Mercury(3,1) = -23479104187.0998;
+    
+    Matrix expected_r_Venus(3, 1);
+    expected_r_Venus(1,1) = -15464725007.0953;
+    expected_r_Venus(2,1) = -109991232251.309;
+    expected_r_Venus(3,1) = -40954081064.4932;
+    
+    Matrix expected_r_Earth(3, 1);
+    expected_r_Earth(1,1) = -92241165484.1736;
+    expected_r_Earth(2,1) = 106561362674.605;
+    expected_r_Earth(3,1) = 46202307090.723;
+    
+    Matrix expected_r_Mars(3, 1);
+    expected_r_Mars(1,1) = -88356416439.1097;
+    expected_r_Mars(2,1) = 46936971339.0211;
+    expected_r_Mars(3,1) = 29058346204.1422;
+    
+    Matrix expected_r_Jupiter(3, 1);
+    expected_r_Jupiter(1,1) = -298724529377.175;
+    expected_r_Jupiter(2,1) = -754614547131.36;
+    expected_r_Jupiter(3,1) = -314458536151.573;
+    
+    Matrix expected_r_Saturn(3, 1);
+    expected_r_Saturn(1,1) = 1481783416258.83;
+    expected_r_Saturn(2,1) = -454122523839.337;
+    expected_r_Saturn(3,1) = -249507876581.788;
+    
+    Matrix expected_r_Uranus(3, 1);
+    expected_r_Uranus(1,1) = 1412079768685.62;
+    expected_r_Uranus(2,1) = -2511546038562.6;
+    expected_r_Uranus(3,1) = -1118190744220.76;
+    
+    Matrix expected_r_Neptune(3, 1);
+    expected_r_Neptune(1,1) = 1870972980141.4;
+    expected_r_Neptune(2,1) = -3929162662197.39;
+    expected_r_Neptune(3,1) = -1655099596079.17;
+    
+    Matrix expected_r_Pluto(3, 1);
+    expected_r_Pluto(1,1) = -2171691268948.67;
+    expected_r_Pluto(2,1) = -3915571707864.54;
+    expected_r_Pluto(3,1) = -552765657868.72;
+    
+    Matrix expected_r_Moon(3, 1);
+    expected_r_Moon(1,1) = 79249995.5974036;
+    expected_r_Moon(2,1) = -338532097.231286;
+    expected_r_Moon(3,1) = -115948815.394642;
+    
+    Matrix expected_r_Sun(3, 1);
+    expected_r_Sun(1,1) = 92068570001.1863;
+    expected_r_Sun(2,1) = -105541663697.566;
+    expected_r_Sun(3,1) = -45758547686.4159;
+    
+    double tolerance = 1e-4;
+    
+    _assert(m_equals(r_Mercury, expected_r_Mercury, tolerance));
+    _assert(m_equals(r_Venus, expected_r_Venus, tolerance));
+    _assert(m_equals(r_Earth, expected_r_Earth, tolerance));
+    _assert(m_equals(r_Mars, expected_r_Mars, tolerance));
+    _assert(m_equals(r_Jupiter, expected_r_Jupiter, tolerance));
+    _assert(m_equals(r_Saturn, expected_r_Saturn, tolerance));
+    _assert(m_equals(r_Uranus, expected_r_Uranus, tolerance));
+    _assert(m_equals(r_Neptune, expected_r_Neptune, tolerance));
+    _assert(m_equals(r_Pluto, expected_r_Pluto, tolerance));
+    _assert(m_equals(r_Moon, expected_r_Moon, tolerance));
+    _assert(m_equals(r_Sun, expected_r_Sun, tolerance));
+    
+    std::cout << "Finished jpl_eph_de430_test_01\n";
+    return 0;
+}
+
 int ltc_test_01() {
     std::cout << "Starting ltc_test_01\n";
     double lon = 0.56;
@@ -1039,6 +1122,59 @@ int g_accelharmonic_test_01() {
     return 0;
 }
 
+int gha_matrix_test_01() {
+    std::cout << "Starting gha_matrix_test_01\n";
+    
+    Matrix GHAmat = GHAMatrix(49746.0);
+    
+    Matrix expected_GHAmat(3, 3);
+    expected_GHAmat(1,1) = -0.612591243162461;
+    expected_GHAmat(1,2) = 0.790399879048998;
+    expected_GHAmat(1,3) = 0.0;
+    expected_GHAmat(2,1) = -0.790399879048998;
+    expected_GHAmat(2,2) = -0.612591243162461;
+    expected_GHAmat(2,3) = 0.0;
+    expected_GHAmat(3,1) = 0.0;
+    expected_GHAmat(3,2) = 0.0;
+    expected_GHAmat(3,3) = 1.0;
+    
+    _assert(m_equals(GHAmat, expected_GHAmat, 1e-6));
+    
+    std::cout << "Finished gha_matrix_test_01\n";
+    return 0;
+}
+
+int var_eqn_test_01() {
+    std::cout << "Starting var_eqn_test_01\n";
+
+    // Initialize input
+    double x = 4.0;
+    Matrix yPhi(42, 1);
+    yPhi(1,1) = 1e6; yPhi(2,1) = 2e6; yPhi(3,1) = 3e6;
+    yPhi(4,1) = 1e3; yPhi(5,1) = 2e3; yPhi(6,1) = 3e3;
+    for (int i = 7; i <= 42; i++) yPhi(i,1) = 0.0;
+
+    // Initialize expected output
+    Matrix expected_yPhip(42, 1);
+    expected_yPhip(1,1) = 1000.0;
+    expected_yPhip(2,1) = 2000.0;
+    expected_yPhip(3,1) = 3000.0;
+    expected_yPhip(4,1) = -8.55483473704505;
+    expected_yPhip(5,1) = -14.7587726037911;
+    expected_yPhip(6,1) = -26.646858402194;
+    for (int i = 7; i <= 42; i++) expected_yPhip(i,1) = 0.0;
+	expected_yPhip = transpose(expected_yPhip);
+
+    // Call VarEqn
+    Matrix result = VarEqn(x, yPhi);
+
+    // Compare results
+    _assert(m_equals(result, expected_yPhip, 1e-10));
+
+    std::cout << "Finished var_eqn_test_01\n";
+    return 0;
+}
+
 int all_tests() {
     _verify(m_constructor_01);
     _verify(m_constructor_02);
@@ -1083,6 +1219,7 @@ int all_tests() {
 	_verify(timeupdate_test_01);
 	_verify(accel_harmonic_test_01);
 	_verify(eqn_equinox_test_01);
+	//_verify(jpl_eph_de430_test_01);
 	_verify(ltc_test_01);
 	_verify(nut_matrix_test_01);
 	_verify(pole_matrix_test_01);
@@ -1090,7 +1227,9 @@ int all_tests() {
 	_verify(gmst_test_01);
 	_verify(gast_test_01);
 	_verify(meas_update_test_01);
-	//_verify(g_accelharmonic_test_01);
+	_verify(g_accelharmonic_test_01);
+	_verify(gha_matrix_test_01);
+	_verify(var_eqn_test_01);
     return 0;
 }
 
@@ -1098,6 +1237,7 @@ int main() {
     std::cout << "Starting tests\n";
 	eop19620101(5);
 	GGM03S(5);
+	DE430Coeff(3, 1);
     int result = all_tests();
     if (result == 0)
         printf("PASSED\n");

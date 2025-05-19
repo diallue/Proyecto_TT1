@@ -2,6 +2,7 @@
 #define _JPL_EPH_DE430_
 
 #include "..\include\matrix.hpp"
+#include "..\include\global.hpp"
 #include "..\include\SAT_Const.hpp"
 #include "..\include\Cheb3D.hpp"
 #include <cmath>

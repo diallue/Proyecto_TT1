@@ -13,6 +13,12 @@ int main() {
 	
 	GGM03S(16471);
 	
+	DE430Coeff(2285, 1020);
+	
+	AuxParam();
+	
+	GEOS3(46);
+	
 	Matrix auxX = R_x(3);
 	cout << "auxX\n" << auxX << "\n";
 	

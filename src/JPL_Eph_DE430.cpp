@@ -1,7 +1,5 @@
 #include "..\include\JPL_Eph_DE430.hpp"
 
-static Matrix PC;
-
 tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix> JPL_Eph_DE430(double Mjd_TDB) {
     double JD = Mjd_TDB + 2400000.5;
 
@@ -183,7 +181,7 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
     Matrix Cx_Jupiter_sub(1, 8), Cy_Jupiter_sub(1, 8), Cz_Jupiter_sub(1, 8);
     for (int k = 1; k <= 8; ++k) {
         Cx_Jupiter_sub(1, k) = Cx_Jupiter(1, 8 * j + k);
-        Cy_Jupiter_sub(1, k) = Cx_Jupiter(1, 8 * j + k);
+        Cy_Jupiter_sub(1, k) = Cy_Jupiter(1, 8 * j + k);
         Cz_Jupiter_sub(1, k) = Cz_Jupiter(1, 8 * j + k);
     }
     Matrix r_Jupiter = Cheb3D(Mjd_TDB, 8, Mjd0, Mjd0 + 32, Cx_Jupiter_sub, Cy_Jupiter_sub, Cz_Jupiter_sub) * 1e3;
