@@ -13,6 +13,7 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
         }
     }
     Matrix PCtemp = PC.extract_row(i);
+	std::cout << "PCtemp: " << PCtemp.n_row << "x" << PCtemp.n_column << std::endl;
 
     double t1 = PCtemp(1, 1) - 2400000.5;
     double dt = Mjd_TDB - t1;
@@ -249,6 +250,18 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
     r_Neptune = r_Neptune - r_Earth;
     r_Pluto = r_Pluto - r_Earth;
     r_Sun = r_Sun - r_Earth;
+	
+	std::cout << "r_Mercury: " << r_Mercury.n_row << "x" << r_Mercury.n_column << std::endl;
+    std::cout << "r_Venus: " << r_Venus.n_row << "x" << r_Venus.n_column << std::endl;
+    std::cout << "r_Earth: " << r_Earth.n_row << "x" << r_Earth.n_column << std::endl;
+    std::cout << "r_Mars: " << r_Mars.n_row << "x" << r_Mars.n_column << std::endl;
+    std::cout << "r_Jupiter: " << r_Jupiter.n_row << "x" << r_Jupiter.n_column << std::endl;
+    std::cout << "r_Saturn: " << r_Saturn.n_row << "x" << r_Saturn.n_column << std::endl;
+    std::cout << "r_Uranus: " << r_Uranus.n_row << "x" << r_Uranus.n_column << std::endl;
+    std::cout << "r_Neptune: " << r_Neptune.n_row << "x" << r_Neptune.n_column << std::endl;
+    std::cout << "r_Pluto: " << r_Pluto.n_row << "x" << r_Pluto.n_column << std::endl;
+    std::cout << "r_Moon: " << r_Moon.n_row << "x" << r_Moon.n_column << std::endl;
+    std::cout << "r_Sun: " << r_Sun.n_row << "x" << r_Sun.n_column << std::endl;
 
     return make_tuple(r_Mercury, r_Venus, r_Earth, r_Mars, r_Jupiter, r_Saturn, r_Uranus, r_Neptune, r_Pluto, r_Moon, r_Sun);
 }
