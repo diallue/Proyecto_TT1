@@ -99,7 +99,7 @@ double& Matrix::operator () (const int row, const int column) {
  * @return Matriz resultante
  * @throw Error si las dimensiones no coinciden
  */
-Matrix Matrix::operator + (Matrix &m) {
+Matrix Matrix::operator + (Matrix m) {
 	if (this->n_row != m.n_row || this->n_column != m.n_column) {
 		cout << "Matrix sum: error in n_row/n_column\n";
         exit(EXIT_FAILURE);

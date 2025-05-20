@@ -21,7 +21,7 @@ public:
 	// Member operators
 	double& operator()(const int n);
     double& operator()(const int row, const int column);
-	Matrix operator+(Matrix &m);
+	Matrix operator+(Matrix m);
     Matrix& operator+(const double val);
     Matrix operator-(Matrix &m);
     Matrix& operator-(const double val);

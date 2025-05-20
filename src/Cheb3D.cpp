@@ -27,6 +27,5 @@ Matrix Cheb3D(double t, int N, double Ta, double Tb, Matrix& Cx, Matrix& Cy, Mat
     coef0(3,1) = Cz(1,1);
     Matrix ChebApp = f1 * tau - f2 + coef0;
 
-    cout << "Cheb3D output: " << ChebApp.n_row << "x" << ChebApp.n_column << endl;
     return ChebApp;
 }

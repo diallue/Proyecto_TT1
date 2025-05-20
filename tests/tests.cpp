@@ -31,6 +31,7 @@
 #include "..\include\G_AccelHarmonic.hpp"
 #include "..\include\GHAMatrix.hpp"
 #include "..\include\VarEqn.hpp"
+#include "..\include\Accel.hpp"
 #include <cstdio>
 #include <cmath>
 #include <iostream>
@@ -379,21 +380,15 @@ int cheb3d_01() {
     int N = 3;
     double Ta = -1;
     double Tb = 1;
-    std::cout << "Initializing Cx\n";
     Matrix Cx(3, 1);
     Cx(1,1) = 1; Cx(2,1) = 0.5; Cx(3,1) = 0.2;
-    std::cout << "Initializing Cy\n";
     Matrix Cy(3, 1);
     Cy(1,1) = 0; Cy(2,1) = 0.3; Cy(3,1) = 0.1;
-    std::cout << "Initializing Cz\n";
     Matrix Cz(3, 1);
     Cz(1,1) = 0; Cz(2,1) = 0.1; Cz(3,1) = 0.05;
-    std::cout << "Initializing expected\n";
     Matrix expected(3, 1);
     expected(1,1) = 0.8; expected(2,1) = -0.1; expected(3,1) = -0.05;
-    std::cout << "Calling Cheb3D\n";
     Matrix result = Cheb3D(t, N, Ta, Tb, Cx, Cy, Cz);
-    std::cout << "Comparing results\n";
     _assert(m_equals(result, expected, 1e-10));
     std::cout << "Finished cheb3d_01\n";
     return 0;
@@ -794,79 +789,75 @@ int eqn_equinox_test_01() {
 
 int jpl_eph_de430_test_01() {
     std::cout << "Starting jpl_eph_de430_test_01\n";
+	
+    Matrix r_Mercury_exp(3, 1);
+    r_Mercury_exp(1, 1) = 18364570296.7767;
+    r_Mercury_exp(2, 1) = -194240890308.454;
+    r_Mercury_exp(3, 1) = -89580185100.4172;
+	
+    Matrix r_Venus_exp(3, 1);
+    r_Venus_exp(1, 1) = 134236480603.468;
+    r_Venus_exp(2, 1) = -121788430081.357;
+    r_Venus_exp(3, 1) = -59451902859.1386;
+	
+    Matrix r_Earth_exp(3, 1);
+    r_Earth_exp(1, 1) = -26742322957.984;
+    r_Earth_exp(2, 1) = 133827327107.372;
+    r_Earth_exp(3, 1) = 58018326578.9664;
+	
+    Matrix r_Mars_exp(3, 1);
+    r_Mars_exp(1, 1) = -170687646029.87;
+    r_Mars_exp(2, 1) = -255905377504.909;
+    r_Mars_exp(3, 1) = -108721468283.956;
+	
+    Matrix r_Jupiter_exp(3, 1);
+    r_Jupiter_exp(1, 1) = 105439249049.906;
+    r_Jupiter_exp(2, 1) = -847168695382.084;
+    r_Jupiter_exp(3, 1) = -365696885445.354;
+	
+    Matrix r_Saturn_exp(3, 1);
+    r_Saturn_exp(1, 1) = 594596636534.412;
+    r_Saturn_exp(2, 1) = -1408094254368.45;
+    r_Saturn_exp(3, 1) = -608810768966.399;
+	
+    Matrix r_Uranus_exp(3, 1);
+    r_Uranus_exp(1, 1) = 2453302678658.18;
+    r_Uranus_exp(2, 1) = 1439200900737.1;
+    r_Uranus_exp(3, 1) = 596605466768.131;
+	
+    Matrix r_Neptune_exp(3, 1);
+    r_Neptune_exp(1, 1) = 4400884479114.87;
+    r_Neptune_exp(2, 1) = -974205297187;
+    r_Neptune_exp(3, 1) = -510890407765.413;
+	
+    Matrix r_Pluto_exp(3, 1);
+    r_Pluto_exp(1, 1) = 1967686040254.54;
+    r_Pluto_exp(2, 1) = -4414806220850.92;
+    r_Pluto_exp(3, 1) = -1978780908608.13;
+	
+    Matrix r_Moon_exp(3, 1);
+    r_Moon_exp(1, 1) = 398673022.292818;
+    r_Moon_exp(2, 1) = -38480993.8201334;
+    r_Moon_exp(3, 1) = -55662807.01252;
+	
+    Matrix r_Sun_exp(3, 1);
+    r_Sun_exp(1, 1) = 26173432883.2097;
+    r_Sun_exp(2, 1) = -132807686289.682;
+    r_Sun_exp(3, 1) = -57572484281.2736;
+	
+    auto [r_Mercury, r_Venus, r_Earth, r_Mars, r_Jupiter, r_Saturn, r_Uranus, r_Neptune, r_Pluto, r_Moon, r_Sun] = JPL_Eph_DE430(58849.5);
     
-    double Mjd_TDB = 58849.5;
-    auto [r_Mercury, r_Venus, r_Earth, r_Mars, r_Jupiter, r_Saturn, r_Uranus, 
-          r_Neptune, r_Pluto, r_Moon, r_Sun] = JPL_Eph_DE430(Mjd_TDB);
-    
-    Matrix expected_r_Mercury(3, 1);
-    expected_r_Mercury(1,1) = 18364570296.7767;
-    expected_r_Mercury(2,1) = -194240890308.454;
-    expected_r_Mercury(3,1) = -89580185100.4172;
-    
-    Matrix expected_r_Venus(3, 1);
-    expected_r_Venus(1,1) = 134236480603.468;
-    expected_r_Venus(2,1) = -121788430081.357;
-    expected_r_Venus(3,1) = -59451902859.1386;
-    
-    Matrix expected_r_Earth(3, 1);
-    expected_r_Earth(1,1) = -26742322957.984;
-    expected_r_Earth(2,1) = 133827327107.372;
-    expected_r_Earth(3,1) = 58018326578.9664;
-    
-    Matrix expected_r_Mars(3, 1);
-    expected_r_Mars(1,1) = -170687646029.87;
-    expected_r_Mars(2,1) = -255905377504.909;
-    expected_r_Mars(3,1) = -108721468283.956;
-    
-    Matrix expected_r_Jupiter(3, 1);
-    expected_r_Jupiter(1,1) = 105439249049.906;
-    expected_r_Jupiter(2,1) = -847168695382.084;
-    expected_r_Jupiter(3,1) = -365696885445.354;
-    
-    Matrix expected_r_Saturn(3, 1);
-    expected_r_Saturn(1,1) = 594596636534.412;
-    expected_r_Saturn(2,1) = -1408094254368.45;
-    expected_r_Saturn(3,1) = -608810768966.399;
-    
-    Matrix expected_r_Uranus(3, 1);
-    expected_r_Uranus(1,1) = 2453302678658.18;
-    expected_r_Uranus(2,1) = 1439200900737.1;
-    expected_r_Uranus(3,1) = 596605466768.131;
-    
-    Matrix expected_r_Neptune(3, 1);
-    expected_r_Neptune(1,1) = 4400884479114.87;
-    expected_r_Neptune(2,1) = -974205297187;
-    expected_r_Neptune(3,1) = -510890407765.413;
-    
-    Matrix expected_r_Pluto(3, 1);
-    expected_r_Pluto(1,1) = 1967686040254.54;
-    expected_r_Pluto(2,1) = -4414806220850.92;
-    expected_r_Pluto(3,1) = -1978780908608.13;
-    
-    Matrix expected_r_Moon(3, 1);
-    expected_r_Moon(1,1) = 398673022.292818;
-    expected_r_Moon(2,1) = -38480993.8201334;
-    expected_r_Moon(3,1) = -55662807.01252;
-    
-    Matrix expected_r_Sun(3, 1);
-    expected_r_Sun(1,1) = 26173432883.2097;
-    expected_r_Sun(2,1) = -132807686289.682;
-    expected_r_Sun(3,1) = -57572484281.2736;
-    
-    double tolerance = 1e-4;
-    
-    _assert(m_equals(r_Mercury, expected_r_Mercury, tolerance));
-    _assert(m_equals(r_Venus, expected_r_Venus, tolerance));
-    _assert(m_equals(r_Earth, expected_r_Earth, tolerance));
-    _assert(m_equals(r_Mars, expected_r_Mars, tolerance));
-    _assert(m_equals(r_Jupiter, expected_r_Jupiter, tolerance));
-    _assert(m_equals(r_Saturn, expected_r_Saturn, tolerance));
-    _assert(m_equals(r_Uranus, expected_r_Uranus, tolerance));
-    _assert(m_equals(r_Neptune, expected_r_Neptune, tolerance));
-    _assert(m_equals(r_Pluto, expected_r_Pluto, tolerance));
-    _assert(m_equals(r_Moon, expected_r_Moon, tolerance));
-    _assert(m_equals(r_Sun, expected_r_Sun, tolerance));
+    _assert(m_equals(r_Mercury, r_Mercury_exp, abs(r_Mercury_exp(1, 1)*1e-11)));
+    _assert(m_equals(r_Venus, r_Venus_exp, abs(r_Venus_exp(1, 1)*1e-11)));
+    _assert(m_equals(r_Earth, r_Earth_exp, abs(r_Earth_exp(1, 1)*1e-11)));
+    _assert(m_equals(r_Mars, r_Mars_exp, abs(r_Mars_exp(1, 1)*1e-11)));
+    _assert(m_equals(r_Jupiter, r_Jupiter_exp, abs(r_Jupiter_exp(1, 1)*1e-11)));
+    _assert(m_equals(r_Saturn, r_Saturn_exp, abs(r_Saturn_exp(1, 1)*1e-11)));
+    _assert(m_equals(r_Uranus, r_Uranus_exp, abs(r_Uranus_exp(1, 1)*1e-11)));
+    _assert(m_equals(r_Neptune, r_Neptune_exp, abs(r_Neptune_exp(1, 1)*1e-11)));
+    _assert(m_equals(r_Pluto, r_Pluto_exp, abs(r_Pluto_exp(1, 1)*1e-11)));
+    _assert(m_equals(r_Moon, r_Moon_exp, abs(r_Moon_exp(1, 1)*1e-11)));
+    _assert(m_equals(r_Sun, r_Sun_exp, abs(r_Sun_exp(1, 1)*1e-11)));
     
     std::cout << "Finished jpl_eph_de430_test_01\n";
     return 0;
@@ -1168,6 +1159,34 @@ int var_eqn_test_01() {
     return 0;
 }
 
+int accel_test_01() {
+    std::cout << "Starting m_Accel_01\n";
+    
+    Matrix R(6, 1); 
+    R(1,1) = 9.0;
+    R(2,1) = 7.5;
+    R(3,1) = 2.8;
+    R(4,1) = 6.43475380190004e+126;
+    R(5,1) = 1.39220669308953e+127;
+    R(6,1) = 4.84358390766759e+127;
+    
+    Matrix A(6, 1); 
+    A(1,1) = 4.6;
+    A(2,1) = 3.8;
+    A(3,1) = 0.0;
+    A(4,1) = 9.0;
+    A(5,1) = 7.5;
+    A(6,1) = 2.8;
+    A = transpose(A);  
+    
+    Matrix B = Accel(0.0, A);  
+    
+    _assert(m_equals(R, B, fabs(R(6,1) * 1e-11))); 
+    
+    std::cout << "Finished m_Accel_01\n";
+    return 0;
+}
+
 int all_tests() {
     _verify(m_constructor_01);
     _verify(m_constructor_02);
@@ -1223,6 +1242,7 @@ int all_tests() {
 	_verify(g_accelharmonic_test_01);
 	_verify(gha_matrix_test_01);
 	_verify(var_eqn_test_01);
+	_verify(accel_test_01);
     return 0;
 }
 
@@ -1232,6 +1252,7 @@ int main() {
 	GGM03S(16471);
 	DE430Coeff(2285, 1020);
 	AuxParamLoad();
+	GEOS3(46);
     int result = all_tests();
     if (result == 0)
         printf("PASSED\n");

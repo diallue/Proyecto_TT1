@@ -13,7 +13,6 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
         }
     }
     Matrix PCtemp = PC.extract_row(i);
-	std::cout << "PCtemp: " << PCtemp.n_row << "x" << PCtemp.n_column << std::endl;
 
     double t1 = PCtemp(1, 1) - 2400000.5;
     double dt = Mjd_TDB - t1;
@@ -38,8 +37,7 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
         Cy_Earth_sub(k + 1, 1) = Cy_Earth(j * 13 + k + 1, 1);
         Cz_Earth_sub(k + 1, 1) = Cz_Earth(j * 13 + k + 1, 1);
     }
-    Matrix r_Earth = Cheb3D(Mjd_TDB, 13, Mjd0, Mjd0 + 16.0, 
-                            Cx_Earth_sub, Cy_Earth_sub, Cz_Earth_sub) * 1e3;
+    Matrix r_Earth = Cheb3D(Mjd_TDB, 13, Mjd0, Mjd0 + 16.0, Cx_Earth_sub, Cy_Earth_sub, Cz_Earth_sub) * 1e3;
 
     Matrix Cx_Moon(104, 1), Cy_Moon(104, 1), Cz_Moon(104, 1);
     for (int k = 0; k < 13; ++k) {
@@ -63,8 +61,7 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
         Cy_Moon_sub(k + 1, 1) = Cy_Moon(j * 13 + k + 1, 1);
         Cz_Moon_sub(k + 1, 1) = Cz_Moon(j * 13 + k + 1, 1);
     }
-    Matrix r_Moon = Cheb3D(Mjd_TDB, 13, Mjd0, Mjd0 + 4.0, 
-                           Cx_Moon_sub, Cy_Moon_sub, Cz_Moon_sub) * 1e3;
+    Matrix r_Moon = Cheb3D(Mjd_TDB, 13, Mjd0, Mjd0 + 4.0, Cx_Moon_sub, Cy_Moon_sub, Cz_Moon_sub) * 1e3;
 
     Matrix Cx_Sun(22, 1), Cy_Sun(22, 1), Cz_Sun(22, 1);
     for (int k = 0; k < 11; ++k) {
@@ -85,8 +82,7 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
         Cy_Sun_sub(k + 1, 1) = Cy_Sun(j * 11 + k + 1, 1);
         Cz_Sun_sub(k + 1, 1) = Cz_Sun(j * 11 + k + 1, 1);
     }
-    Matrix r_Sun = Cheb3D(Mjd_TDB, 11, Mjd0, Mjd0 + 16.0, 
-                          Cx_Sun_sub, Cy_Sun_sub, Cz_Sun_sub) * 1e3;
+    Matrix r_Sun = Cheb3D(Mjd_TDB, 11, Mjd0, Mjd0 + 16.0, Cx_Sun_sub, Cy_Sun_sub, Cz_Sun_sub) * 1e3;
 
     Matrix Cx_Mercury(56, 1), Cy_Mercury(56, 1), Cz_Mercury(56, 1);
     for (int k = 0; k < 14; ++k) {
@@ -109,8 +105,7 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
         Cy_Mercury_sub(k + 1, 1) = Cy_Mercury(j * 14 + k + 1, 1);
         Cz_Mercury_sub(k + 1, 1) = Cz_Mercury(j * 14 + k + 1, 1);
     }
-    Matrix r_Mercury = Cheb3D(Mjd_TDB, 14, Mjd0, Mjd0 + 8.0, 
-                              Cx_Mercury_sub, Cy_Mercury_sub, Cz_Mercury_sub) * 1e3;
+    Matrix r_Mercury = Cheb3D(Mjd_TDB, 14, Mjd0, Mjd0 + 8.0, Cx_Mercury_sub, Cy_Mercury_sub, Cz_Mercury_sub) * 1e3;
 
     Matrix Cx_Venus(20, 1), Cy_Venus(20, 1), Cz_Venus(20, 1);
     for (int k = 0; k < 10; ++k) {
@@ -131,8 +126,7 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
         Cy_Venus_sub(k + 1, 1) = Cy_Venus(j * 10 + k + 1, 1);
         Cz_Venus_sub(k + 1, 1) = Cz_Venus(j * 10 + k + 1, 1);
     }
-    Matrix r_Venus = Cheb3D(Mjd_TDB, 10, Mjd0, Mjd0 + 16.0, 
-                            Cx_Venus_sub, Cy_Venus_sub, Cz_Venus_sub) * 1e3;
+    Matrix r_Venus = Cheb3D(Mjd_TDB, 10, Mjd0, Mjd0 + 16.0, Cx_Venus_sub, Cy_Venus_sub, Cz_Venus_sub) * 1e3;
 
     Matrix Cx_Mars(11, 1), Cy_Mars(11, 1), Cz_Mars(11, 1);
     for (int k = 0; k < 11; ++k) {
@@ -213,8 +207,7 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
         Cy_Nutations_sub(k + 1, 1) = Cy_Nutations(j * 10 + k + 1, 1);
     }
     Matrix Cz_Nutations_sub(10, 1); 
-    Matrix Nutations = Cheb3D(Mjd_TDB, 10, Mjd0, Mjd0 + 8.0, 
-                              Cx_Nutations_sub, Cy_Nutations_sub, Cz_Nutations_sub);
+    Matrix Nutations = Cheb3D(Mjd_TDB, 10, Mjd0, Mjd0 + 8.0, Cx_Nutations_sub, Cy_Nutations_sub, Cz_Nutations_sub);
 
     Matrix Cx_Librations(40, 1), Cy_Librations(40, 1), Cz_Librations(40, 1);
     for (int k = 0; k < 10; ++k) {
@@ -237,8 +230,7 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
         Cy_Librations_sub(k + 1, 1) = Cy_Librations(j * 10 + k + 1, 1);
         Cz_Librations_sub(k + 1, 1) = Cz_Librations(j * 10 + k + 1, 1);
     }
-    Matrix Librations = Cheb3D(Mjd_TDB, 10, Mjd0, Mjd0 + 8.0, 
-                               Cx_Librations_sub, Cy_Librations_sub, Cz_Librations_sub);
+    Matrix Librations = Cheb3D(Mjd_TDB, 10, Mjd0, Mjd0 + 8.0, Cx_Librations_sub, Cy_Librations_sub, Cz_Librations_sub);
 
     r_Earth = r_Earth - r_Moon * EMRAT1;
     r_Mercury = r_Mercury - r_Earth;
@@ -250,18 +242,6 @@ tuple<Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Matrix, Ma
     r_Neptune = r_Neptune - r_Earth;
     r_Pluto = r_Pluto - r_Earth;
     r_Sun = r_Sun - r_Earth;
-	
-	std::cout << "r_Mercury: " << r_Mercury.n_row << "x" << r_Mercury.n_column << std::endl;
-    std::cout << "r_Venus: " << r_Venus.n_row << "x" << r_Venus.n_column << std::endl;
-    std::cout << "r_Earth: " << r_Earth.n_row << "x" << r_Earth.n_column << std::endl;
-    std::cout << "r_Mars: " << r_Mars.n_row << "x" << r_Mars.n_column << std::endl;
-    std::cout << "r_Jupiter: " << r_Jupiter.n_row << "x" << r_Jupiter.n_column << std::endl;
-    std::cout << "r_Saturn: " << r_Saturn.n_row << "x" << r_Saturn.n_column << std::endl;
-    std::cout << "r_Uranus: " << r_Uranus.n_row << "x" << r_Uranus.n_column << std::endl;
-    std::cout << "r_Neptune: " << r_Neptune.n_row << "x" << r_Neptune.n_column << std::endl;
-    std::cout << "r_Pluto: " << r_Pluto.n_row << "x" << r_Pluto.n_column << std::endl;
-    std::cout << "r_Moon: " << r_Moon.n_row << "x" << r_Moon.n_column << std::endl;
-    std::cout << "r_Sun: " << r_Sun.n_row << "x" << r_Sun.n_column << std::endl;
 
     return make_tuple(r_Mercury, r_Venus, r_Earth, r_Mars, r_Jupiter, r_Saturn, r_Uranus, r_Neptune, r_Pluto, r_Moon, r_Sun);
 }
