@@ -1163,8 +1163,12 @@ int var_eqn_test_01() {
     
     double x = 4.0;
     Matrix yPhi(42, 1);
-    yPhi(1,1) = 1e6; yPhi(2,1) = 2e6; yPhi(3,1) = 3e6;
-    yPhi(4,1) = 1e3; yPhi(5,1) = 2e3; yPhi(6,1) = 3e3;
+    yPhi(1,1) = 1e6; 
+	yPhi(2,1) = 2e6; 
+	yPhi(3,1) = 3e6;
+    yPhi(4,1) = 1e3; 
+	yPhi(5,1) = 2e3; 
+	yPhi(6,1) = 3e3;
     for (int i = 7; i <= 42; i++) {
         yPhi(i,1) = 0.0;
     }
@@ -1190,29 +1194,28 @@ int var_eqn_test_01() {
 
 int deinteg_test_01() {
     std::cout << "Starting deinteg_test_01\n";
-    
-    auto f = [](double t, Matrix z) -> Matrix {
-        Matrix result(1, 1);
-        result(1, 1) = -z(1, 1);
-        return result;
-    };
-    
-    double t = 0.0;
-    double tout = 10.0;
-    double relerr = 1e-6;
-    double abserr = 1e-6;
-    int n_eqn = 1;
-    Matrix y(1, 1);
-    y(1, 1) = 1.0;
-	y = transpose(y);
-    
-    Matrix expected(1, 1);
-    expected(1, 1) = 4.3712896598145e-05;
-    
-    Matrix result = DEInteg(f, t, tout, relerr, abserr, n_eqn, y);
-    
-    _assert(m_equals(result, expected, 1e-5));
-    
+
+    Matrix R(6, 1);
+	R(1, 1) = 5542555.89427452;
+	R(2, 1) = 3213514.83814162;
+	R(3, 1) = 3990892.92789074;
+	R(4, 1) = 5394.06894044389;
+	R(5, 1) = -2365.2129057402;
+	R(6, 1) = -7061.8448137347;
+          
+	Matrix A(6, 1);
+	A(1, 1) = 6221397.62857869;
+	A(2, 1) = 2867713.77965738;
+	A(3, 1) = 3006155.98509949;
+	A(4, 1) = 4645.04725161806;
+	A(5, 1) = -2752.21591588204;
+	A(6, 1) = -7507.99940987031;
+	
+	A = transpose(A);
+	Matrix B = DEInteg(Accel, 0, -134.999991953373, 1e-13, 1e-6, 6, A);
+
+    _assert(m_equals(R,B,abs(R(5)*1e-5)));
+
     std::cout << "Finished deinteg_test_01\n";
     return 0;
 }
