@@ -62,8 +62,7 @@ int main() {
     double alt = 300.20;              
 
 	std::cout << "Computing station position...\n";
-    Matrix pos = Position(lon, lat, alt);
-    Matrix Rs = transpose(pos);
+    Matrix Rs = Position(lon, lat, alt);
 	std::cout << "Rs dimensions: " << Rs.n_row << " x " << Rs.n_column << "\n";
 
     double Mjd1 = obs(1, 1);
@@ -221,7 +220,13 @@ int main() {
 
         std::cout << "Performing azimuth measurement update...\n";
         Matrix K;
-        auto meas_result = MeasUpdate(Y, Matrix(obs(i, 2)), Matrix(Azim), Matrix(sigma_az), dAdY, P, 6);
+		Matrix z(1, 1); z(1, 1) = obs(i, 2);
+		Matrix g(1, 1); g(1, 1) = Azim;
+		Matrix s_sigma(1, 1); s_sigma(1, 1) = sigma_az;
+		std::cout << "z dimensions: " << z.n_row << " x " << z.n_column << "\n";
+		std::cout << "g dimensions: " << g.n_row << " x " << g.n_column << "\n";
+		std::cout << "s_sigma dimensions: " << s_sigma.n_row << " x " << s_sigma.n_column << "\n";
+		auto meas_result = MeasUpdate(Y, z, g, s_sigma, dAdY, P, 6);
         K = std::get<0>(meas_result);
         Y = std::get<1>(meas_result);
         P = std::get<2>(meas_result);
@@ -247,7 +252,13 @@ int main() {
 		std::cout << "dEdY dimensions: " << dEdY.n_row << " x " << dEdY.n_column << "\n";
 
         std::cout << "Performing elevation measurement update...\n";
-        meas_result = MeasUpdate(Y, obs(i, 3), Elev, sigma_el, dEdY, P, 6);
+        z(1, 1) = obs(i, 3);
+		g(1, 1) = Elev;
+		s_sigma(1, 1) = sigma_el;
+		std::cout << "z dimensions: " << z.n_row << " x " << z.n_column << "\n";
+		std::cout << "g dimensions: " << g.n_row << " x " << g.n_column << "\n";
+		std::cout << "s_sigma dimensions: " << s_sigma.n_row << " x " << s_sigma.n_column << "\n";
+		meas_result = MeasUpdate(Y, z, g, s_sigma, dEdY, P, 6);
         K = std::get<0>(meas_result);
         Y = std::get<1>(meas_result);
         P = std::get<2>(meas_result);
@@ -269,7 +280,13 @@ int main() {
         std::cout << "dDdY dimensions: " << dDdY.n_row << " x " << dDdY.n_column << "\n";
 
         std::cout << "Performing range measurement update...\n";
-        meas_result = MeasUpdate(Y, Matrix(obs(i, 4)), Matrix(Dist), Matrix(sigma_range), dDdY, P, 6);
+        z(1, 1) = obs(i, 4);
+		g(1, 1) = Dist;
+		s_sigma(1, 1) = sigma_range;
+		std::cout << "z dimensions: " << z.n_row << " x " << z.n_column << "\n";
+		std::cout << "g dimensions: " << g.n_row << " x " << g.n_column << "\n";
+		std::cout << "s_sigma dimensions: " << s_sigma.n_row << " x " << s_sigma.n_column << "\n";
+		meas_result = MeasUpdate(Y, z, g, s_sigma, dDdY, P, 6);
         K = std::get<0>(meas_result);
         Y = std::get<1>(meas_result);
         P = std::get<2>(meas_result);
