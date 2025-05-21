@@ -1,6 +1,16 @@
 #include "..\include\VarEqn.hpp"
 #include <iostream>
 
+/**
+ * Calcula la ecuación variacional para la propagación de órbitas y matrices de transición de estado
+ * 
+ * @param x Tiempo desde la época de referencia [s]
+ * @param yPhi Vector de estado extendido (42x1) que contiene:
+ *             - Posición (3 elementos)
+ *             - Velocidad (3 elementos)
+ *             - Matriz de transición de estado (36 elementos)
+ * @return Derivada del vector de estado extendido (42x1)
+ */
 Matrix VarEqn(double x, Matrix& yPhi) {
     auto [x_pole, y_pole, UT1_UTC, LOD, dpsi, deps, dx_pole, dy_pole, TAI_UTC] = 
         IERS(eopdata, AuxParam.Mjd_UTC, 'l');

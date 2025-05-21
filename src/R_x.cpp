@@ -1,5 +1,10 @@
 #include "..\include\R_x.hpp"
 
+/**
+ * Genera una matriz de rotación alrededor del eje X.
+ * @param angle Ángulo de rotación (en radianes).
+ * @return Matriz de rotación 3x3.
+ */
 Matrix R_x(double angle) {
 	double C = cos(angle);
 	double S = sin(angle);

@@ -1,5 +1,13 @@
 #include "..\include\EccAnom.hpp"
 
+/**
+ * Calcula la anomalía excéntrica (E) a partir de la anomalía media (M) y la excentricidad (e).
+ * Utiliza el método de Newton-Raphson para resolver la ecuación de Kepler.
+ * @param M Anomalía media (en radianes).
+ * @param e Excentricidad de la órbita (0 <= e < 1).
+ * @return Anomalía excéntrica (E, en radianes).
+ * @throw Error si no converge tras 15 iteraciones.
+ */
 double EccAnom(double M, double e) {
     const int maxit = 15;
     int i = 1;

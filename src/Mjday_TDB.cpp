@@ -1,5 +1,10 @@
 #include "..\include\Mjday_TDB.hpp"
 
+/**
+ * Convierte el día juliano modificado en Tiempo Terrestre (Mjd_TT) a Tiempo Dinámico Baricéntrico (Mjd_TDB).
+ * @param Mjd_TT Día juliano modificado en Tiempo Terrestre (MJD TT).
+ * @return Día juliano modificado en Tiempo Dinámico Baricéntrico (MJD TDB).
+ */
 double Mjday_TDB(double Mjd_TT) {
 	double T_TT = (Mjd_TT - MJD_J2000)/36525;
 	
