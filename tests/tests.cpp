@@ -1195,13 +1195,13 @@ int var_eqn_test_01() {
 int deinteg_test_01() {
     std::cout << "Starting deinteg_test_01\n";
 
-    Matrix R(6, 1);
-	R(1, 1) = 5542555.89427452;
-	R(2, 1) = 3213514.83814162;
-	R(3, 1) = 3990892.92789074;
-	R(4, 1) = 5394.06894044389;
-	R(5, 1) = -2365.2129057402;
-	R(6, 1) = -7061.8448137347;
+    Matrix expected(6, 1);
+	expected(1, 1) = 5542555.89427452;
+	expected(2, 1) = 3213514.83814162;
+	expected(3, 1) = 3990892.92789074;
+	expected(4, 1) = 5394.06894044389;
+	expected(5, 1) = -2365.2129057402;
+	expected(6, 1) = -7061.8448137347;
           
 	Matrix A(6, 1);
 	A(1, 1) = 6221397.62857869;
@@ -1212,9 +1212,9 @@ int deinteg_test_01() {
 	A(6, 1) = -7507.99940987031;
 	
 	A = transpose(A);
-	Matrix B = DEInteg(Accel, 0, -134.999991953373, 1e-13, 1e-6, 6, A);
+	Matrix result = DEInteg(Accel, 0, -134.999991953373, 1e-13, 1e-6, 6, A);
 
-    _assert(m_equals(R,B,abs(R(5)*1e-5)));
+    _assert(m_equals(expected, result, abs(expected(5)*1e-6)));
 
     std::cout << "Finished deinteg_test_01\n";
     return 0;
