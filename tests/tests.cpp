@@ -30,8 +30,9 @@
 #include "..\include\MeasUpdate.hpp"
 #include "..\include\G_AccelHarmonic.hpp"
 #include "..\include\GHAMatrix.hpp"
-#include "..\include\VarEqn.hpp"
 #include "..\include\Accel.hpp"
+#include "..\include\VarEqn.hpp"
+#include "..\include\DEInteg.hpp"
 #include <cstdio>
 #include <cmath>
 #include <iostream>
@@ -1129,6 +1130,34 @@ int gha_matrix_test_01() {
     return 0;
 }
 
+int accel_test_01() {
+    std::cout << "Starting m_Accel_01\n";
+    
+    Matrix R(6, 1); 
+    R(1,1) = 9.0;
+    R(2,1) = 7.5;
+    R(3,1) = 2.8;
+    R(4,1) = 6.43475380190004e+126;
+    R(5,1) = 1.39220669308953e+127;
+    R(6,1) = 4.84358390766759e+127;
+    
+    Matrix A(6, 1); 
+    A(1,1) = 4.6;
+    A(2,1) = 3.8;
+    A(3,1) = 0.0;
+    A(4,1) = 9.0;
+    A(5,1) = 7.5;
+    A(6,1) = 2.8;
+    A = transpose(A);  
+    
+    Matrix B = Accel(0.0, A);  
+    
+    _assert(m_equals(R, B, fabs(R(6,1) * 1e-11))); 
+    
+    std::cout << "Finished m_Accel_01\n";
+    return 0;
+}
+
 int var_eqn_test_01() {
     std::cout << "Starting var_eqn_test_01\n";
     
@@ -1159,31 +1188,32 @@ int var_eqn_test_01() {
     return 0;
 }
 
-int accel_test_01() {
-    std::cout << "Starting m_Accel_01\n";
+int deinteg_test_01() {
+    std::cout << "Starting deinteg_test_01\n";
     
-    Matrix R(6, 1); 
-    R(1,1) = 9.0;
-    R(2,1) = 7.5;
-    R(3,1) = 2.8;
-    R(4,1) = 6.43475380190004e+126;
-    R(5,1) = 1.39220669308953e+127;
-    R(6,1) = 4.84358390766759e+127;
+    auto f = [](double t, Matrix z) -> Matrix {
+        Matrix result(1, 1);
+        result(1, 1) = -z(1, 1);
+        return result;
+    };
     
-    Matrix A(6, 1); 
-    A(1,1) = 4.6;
-    A(2,1) = 3.8;
-    A(3,1) = 0.0;
-    A(4,1) = 9.0;
-    A(5,1) = 7.5;
-    A(6,1) = 2.8;
-    A = transpose(A);  
+    double t = 0.0;
+    double tout = 10.0;
+    double relerr = 1e-6;
+    double abserr = 1e-6;
+    int n_eqn = 1;
+    Matrix y(1, 1);
+    y(1, 1) = 1.0;
+	y = transpose(y);
     
-    Matrix B = Accel(0.0, A);  
+    Matrix expected(1, 1);
+    expected(1, 1) = 4.3712896598145e-05;
     
-    _assert(m_equals(R, B, fabs(R(6,1) * 1e-11))); 
+    Matrix result = DEInteg(f, t, tout, relerr, abserr, n_eqn, y);
     
-    std::cout << "Finished m_Accel_01\n";
+    _assert(m_equals(result, expected, 1e-5));
+    
+    std::cout << "Finished deinteg_test_01\n";
     return 0;
 }
 
@@ -1241,8 +1271,9 @@ int all_tests() {
 	_verify(meas_update_test_01);
 	_verify(g_accelharmonic_test_01);
 	_verify(gha_matrix_test_01);
-	_verify(var_eqn_test_01);
 	_verify(accel_test_01);
+	_verify(var_eqn_test_01);
+	_verify(deinteg_test_01);
     return 0;
 }
 
