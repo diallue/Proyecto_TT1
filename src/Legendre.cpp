@@ -11,54 +11,60 @@ using namespace std;
  * @param[out] pnm Matriz (n+1)x(m+1) de polinomios de Legendre normalizados
  * @param[out] dpnm Matriz (n+1)x(m+1) de derivadas de los polinomios
  */
-void Legendre(int n, int m, double fi, Matrix &pnm, Matrix &dpnm) {
-    pnm = Matrix(n+1, m+1);
-    dpnm = Matrix(n+1, m+1);
+std::tuple<Matrix, Matrix> Legendre(int n, int m, double fi) {
+    Matrix pnm = zeros(n + 1, m + 1);
+    Matrix dpnm = zeros(n + 1, m + 1);
 
     pnm(1, 1) = 1.0;
     dpnm(1, 1) = 0.0;
-    
-    if (m >= 1) {
-        pnm(2, 2) = sqrt(3.0) * cos(fi);
-        dpnm(2, 2) = -sqrt(3.0) * sin(fi);
+    if (n >= 1 && m >= 1) {
+        pnm(2, 2) = std::sqrt(3.0) * std::cos(fi);
+        dpnm(2, 2) = -std::sqrt(3.0) * std::sin(fi);
     }
 
-    for (int i = 2; i <= n; i++) {
-        if (i <= m) {
-            pnm(i+1, i+1) = sqrt((2.0*i + 1.0)/(2.0*i)) * cos(fi) * pnm(i, i);
-            dpnm(i+1, i+1) = sqrt((2.0*i + 1.0)/(2.0*i)) * 
-                            (cos(fi) * dpnm(i, i) - sin(fi) * pnm(i, i));
+    for (int i = 2; i <= n; ++i) {
+        pnm(i + 1, i + 1) = std::sqrt((2.0 * i + 1.0) / (2.0 * i)) * std::cos(fi) * pnm(i, i);
+    }
+    for (int i = 2; i <= n; ++i) {
+        dpnm(i + 1, i + 1) = std::sqrt((2.0 * i + 1.0) / (2.0 * i)) * (std::cos(fi) * dpnm(i, i) - std::sin(fi) * pnm(i, i));
+    }
+
+    for (int i = 1; i <= n; ++i) {
+        pnm(i + 1, i) = std::sqrt(2.0 * i + 1.0) * std::sin(fi) * pnm(i, i);
+    }
+    for (int i = 1; i <= n; ++i) {
+        dpnm(i + 1, i) = std::sqrt(2.0 * i + 1.0) * (std::cos(fi) * pnm(i, i) + std::sin(fi) * dpnm(i, i));
+    }
+
+    int j = 0;
+    int k = 2;
+    while (true) {
+        for (int i = k; i <= n; ++i) {
+            pnm(i + 1, j + 1) = std::sqrt((2.0 * i + 1.0) / ((i - j) * (i + j))) * (std::sqrt(2.0 * i - 1.0) * std::sin(fi) * pnm(i, j + 1) -std::sqrt(((i + j - 1.0) * (i - j - 1.0)) / (2.0 * i - 3.0)) * pnm(i - 1, j + 1));
+        }
+        j = j + 1;
+        k = k + 1;
+        if (j > m) {
+            break;
         }
     }
 
-    for (int i = 1; i <= n; i++) {
-        if (i <= m) {
-            pnm(i+1, i) = sqrt(2.0*i + 1.0) * sin(fi) * pnm(i, i);
-            dpnm(i+1, i) = sqrt(2.0*i + 1.0) * 
-                          (cos(fi) * pnm(i, i) + sin(fi) * dpnm(i, i));
+    j = 0;
+    k = 2;
+    while (true) {
+        for (int i = k; i <= n; ++i) {
+            dpnm(i + 1, j + 1) = std::sqrt((2.0 * i + 1.0) / ((i - j) * (i + j))) * (
+                std::sqrt(2.0 * i - 1.0) * std::sin(fi) * dpnm(i, j + 1) +
+                std::sqrt(2.0 * i - 1.0) * std::cos(fi) * pnm(i, j + 1) -
+                std::sqrt(((i + j - 1.0) * (i - j - 1.0)) / (2.0 * i - 3.0)) * dpnm(i - 1, j + 1)
+            );
+        }
+        j = j + 1;
+        k = k + 1;
+        if (j > m) {
+            break;
         }
     }
 
-    for (int j = 0; j <= m; j++) {
-        for (int i = j+1; i <= n; i++) {
-            if (j+1 > m) continue;
-            
-            double factor = sqrt((2.0*i + 1.0)/((i-j)*(i+j)));
-            
-            double term1 = sqrt(2.0*i - 1.0) * sin(fi) * pnm(i, j+1);
-            double term2 = 0.0;
-            if (i-1 >= j+1) {
-                term2 = sqrt(((i+j-1.0)*(i-j-1.0))/(2.0*i-3.0)) * pnm(i-1, j+1);
-            }
-            pnm(i+1, j+1) = factor * (term1 - term2);
-            
-            double dterm1 = sqrt(2.0*i - 1.0) * sin(fi) * dpnm(i, j+1);
-            double dterm2 = sqrt(2.0*i - 1.0) * cos(fi) * pnm(i, j+1);
-            double dterm3 = 0.0;
-            if (i-1 >= j+1) {
-                dterm3 = sqrt(((i+j-1.0)*(i-j-1.0))/(2.0*i-3.0)) * dpnm(i-1, j+1);
-            }
-            dpnm(i+1, j+1) = factor * (dterm1 + dterm2 - dterm3);
-        }
-    }
+    return std::make_tuple(pnm, dpnm);
 }

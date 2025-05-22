@@ -642,63 +642,49 @@ int legendre_test_01() {
     std::cout << "Starting legendre_test_01\n";
     int n = 3;
     int m = 3;
-    double fi = 3.141592653589793/4.0;
-    
-    Matrix pnm, dpnm;
-    Legendre(n, m, fi, pnm, dpnm);
-    
+    double fi = 3.141592653589793 / 4.0;
+
+    auto [pnm, dpnm] = Legendre(n, m, fi);
+
     Matrix expected_pnm(4, 4);
-    expected_pnm(1,1)=1.0;                     
-	expected_pnm(1,2)=0.0;                     
-	expected_pnm(1,3)=0.0;                     
-	expected_pnm(1,4)=0.0;
-    expected_pnm(2,1)=1.22474487139159;        
-	expected_pnm(2,2)=1.22474487139159;        
-	expected_pnm(2,3)=0.0;                     
-	expected_pnm(2,4)=0.0;
-    expected_pnm(3,1)=0.559016994374947;       
-	expected_pnm(3,2)=1.93649167310371;        
-	expected_pnm(3,3)=0.968245836551854;        
-	expected_pnm(3,4)=0.0;
-    expected_pnm(4,1)=-0.467707173346743;      
-	expected_pnm(4,2)=1.71846588560844;        
-	expected_pnm(4,3)=1.81142209327368;        
-	expected_pnm(4,4)=0.739509972887452;
-    
+    expected_pnm(1, 1) = 1.0;
+    expected_pnm(1, 2) = 0.0;
+    expected_pnm(1, 3) = 0.0;
+    expected_pnm(1, 4) = 0.0;
+    expected_pnm(2, 1) = 1.22474487139159;
+    expected_pnm(2, 2) = 1.22474487139159;
+    expected_pnm(2, 3) = 0.0;
+    expected_pnm(2, 4) = 0.0;
+    expected_pnm(3, 1) = 0.559016994374947;
+    expected_pnm(3, 2) = 1.93649167310371;
+    expected_pnm(3, 3) = 0.968245836551854;
+    expected_pnm(3, 4) = 0.0;
+    expected_pnm(4, 1) = -0.467707173346743;
+    expected_pnm(4, 2) = 1.71846588560844;
+    expected_pnm(4, 3) = 1.81142209327368;
+    expected_pnm(4, 4) = 0.739509972887452;
+
     Matrix expected_dpnm(4, 4);
-    expected_dpnm(1,1)=0.0;                    
-	expected_dpnm(1,2)=0.0;                    
-	expected_dpnm(1,3)=0.0;                    
-	expected_dpnm(1,4)=0.0;
-    expected_dpnm(2,1)=1.22474487139159;       
-	expected_dpnm(2,2)=-1.22474487139159;      
-	expected_dpnm(2,3)=0.0;                    
-	expected_dpnm(2,4)=0.0;
-    expected_dpnm(3,1)=3.35410196624968;       
-	expected_dpnm(3,2)=7.44760245974182e-16;   
-	expected_dpnm(3,3)=-1.93649167310371;      
-	expected_dpnm(3,4)=0.0;
-    expected_dpnm(4,1)=4.20936456012068;       
-	expected_dpnm(4,2)=4.00975373308636;       
-	expected_dpnm(4,3)=-1.81142209327368;      
-	expected_dpnm(4,4)=-2.21852991866236;
-        
-    for (int i = 1; i <= 4; i++) {
-        for (int j = 1; j <= 3; j++) {
-            if (fabs(pnm(i,j) - expected_pnm(i,j)) > 1e-10) {
-                printf("Diferencia en pnm(%d,%d): C++=%2.15f vs MATLAB=%2.15f\n", 
-                      i, j, pnm(i,j), expected_pnm(i,j));
-            }
-            if (fabs(dpnm(i,j) - expected_dpnm(i,j)) > 1e-10) {
-                printf("Diferencia en dpnm(%d,%d): C++=%2.15f vs MATLAB=%2.15f\n", 
-                      i, j, dpnm(i,j), expected_dpnm(i,j));
-            }
-        }
-    }
-    
+    expected_dpnm(1, 1) = 0.0;
+    expected_dpnm(1, 2) = 0.0;
+    expected_dpnm(1, 3) = 0.0;
+    expected_dpnm(1, 4) = 0.0;
+    expected_dpnm(2, 1) = 1.22474487139159;
+    expected_dpnm(2, 2) = -1.22474487139159;
+    expected_dpnm(2, 3) = 0.0;
+    expected_dpnm(2, 4) = 0.0;
+    expected_dpnm(3, 1) = 3.35410196624968;
+    expected_dpnm(3, 2) = 7.44760245974182e-16;
+    expected_dpnm(3, 3) = -1.93649167310371;
+    expected_dpnm(3, 4) = 0.0;
+    expected_dpnm(4, 1) = 4.20936456012068;
+    expected_dpnm(4, 2) = 4.00975373308636;
+    expected_dpnm(4, 3) = -1.81142209327368;
+    expected_dpnm(4, 4) = -2.21852991866236;
+
     _assert(m_equals(pnm, expected_pnm, 1e-10));
     _assert(m_equals(dpnm, expected_dpnm, 1e-10));
-    
+
     std::cout << "Finished legendre_test_01\n";
     return 0;
 }
