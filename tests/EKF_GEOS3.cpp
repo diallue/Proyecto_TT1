@@ -30,7 +30,7 @@
 
 int main() {
     eop19620101(24324);
-    GGM03S(16471);
+    GGM03S(181);
     DE430Coeff(2285, 1020);
     AuxParamLoad();
     GEOS3(46);
@@ -40,7 +40,7 @@ int main() {
         std::cerr << "Invalid eopdata dimensions: " << eopdata.n_row << " x " << eopdata.n_column << "\n";
         return 1;
     }
-    if (Cnm.n_row != 16471 || Cnm.n_column != 16471 || Snm.n_row != 16471 || Snm.n_column != 16471) {
+    if (Cnm.n_row != 181 || Cnm.n_column != 181 || Snm.n_row != 181 || Snm.n_column != 181) {
         std::cerr << "Invalid Cnm/Snm dimensions\n";
         return 1;
     }
