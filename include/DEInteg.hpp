@@ -4,7 +4,6 @@
 #include "..\include\matrix.hpp"
 #include "..\include\SAT_Const.hpp"
 #include "..\include\sign_.hpp"
-#include "..\include\global.hpp"
 #include <tuple>
 #include <iostream>
 #include <cmath>

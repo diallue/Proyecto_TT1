@@ -1197,7 +1197,6 @@ int deinteg_test_01() {
 	A(5, 1) = -2752.21591588204;
 	A(6, 1) = -7507.99940987031;
 	
-	A = transpose(A);
 	Matrix result = DEInteg(Accel, 0, -134.999991953373, 1e-13, 1e-6, 6, A);
 
     _assert(m_equals(expected, result, abs(expected(5)*1e-6)));

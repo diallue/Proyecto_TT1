@@ -11,7 +11,7 @@
  *             - Matriz de transición de estado (36 elementos)
  * @return Derivada del vector de estado extendido (42x1)
  */
-Matrix VarEqn(double x, Matrix& yPhi) {
+Matrix VarEqn(double x, Matrix yPhi) {
     auto [x_pole, y_pole, UT1_UTC, LOD, dpsi, deps, dx_pole, dy_pole, TAI_UTC] = 
         IERS(eopdata, AuxParam.Mjd_UTC, 'l');
     
