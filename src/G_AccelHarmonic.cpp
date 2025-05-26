@@ -2,7 +2,6 @@
 
 /**
  * Calcula numéricamente el gradiente de la aceleración debida al campo gravitatorio armónico.
- * 
  * @param r Vector de posición en coordenadas geocéntricas (ECEF), dimensión 3x1
  * @param U Matriz de coeficientes armónicos normalizados del campo gravitatorio
  * @param n_max Grado máximo del desarrollo armónico

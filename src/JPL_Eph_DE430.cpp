@@ -2,7 +2,6 @@
 
 /**
  * Calcula las posiciones de los planetas, la Luna y el Sol usando las efemérides JPL DE430
- * 
  * @param Mjd_TDB Fecha Juliana Modificada en Tiempo Dinámico Bariocéntrico (TDB)
  * @return Tupla con 11 vectores de posición (3x1) en metros:
  *         [0] Mercurio (geocéntrico)

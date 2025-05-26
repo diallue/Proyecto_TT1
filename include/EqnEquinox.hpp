@@ -8,6 +8,11 @@
 #include <cmath>
 #include <tuple>
 
+/**
+ * @details Calcula la ecuación de los equinoccios (diferencia entre tiempo sidéreo aparente y medio)
+ * @param Mjd_TT Fecha Juliana Modificada en Tiempo Terrestre (TT)
+ * @return Ecuación de los equinoccios en radianes [rad]
+ */
 double EqnEquinox(double Mjd_TT);
 
 #endif

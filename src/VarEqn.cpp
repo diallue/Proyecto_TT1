@@ -3,7 +3,6 @@
 
 /**
  * Calcula la ecuación variacional para la propagación de órbitas y matrices de transición de estado
- * 
  * @param x Tiempo desde la época de referencia [s]
  * @param yPhi Vector de estado extendido (42x1) que contiene:
  *             - Posición (3 elementos)

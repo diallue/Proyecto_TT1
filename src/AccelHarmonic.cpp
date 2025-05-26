@@ -2,7 +2,6 @@
 
 /**
  * Calcula la aceleración gravitacional armónica en un punto dado, considerando los coeficientes de armónicos esféricos del geoide.
- * 
  * @param r Vector de posición en el sistema de coordenadas inercial [m] (3x1)
  * @param E Matriz de rotación del sistema inercial al sistema fijo a la Tierra (3x3)
  * @param n_max Grado máximo para la expansión en armónicos esféricos

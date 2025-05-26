@@ -2,7 +2,6 @@
 
 /**
  * Realiza la actualización de medida de un filtro de Kalman.
- * 
  * @param x Estado estimado antes de la medida (vector columna de dimensión n)
  * @param z Vector de medida observado (vector columna de dimensión m)
  * @param g Vector de medida estimado (predicción de la medida)

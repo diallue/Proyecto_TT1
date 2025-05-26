@@ -7,6 +7,11 @@
 #include "..\include\gmst.hpp"
 #include <cmath>
 
+/**
+ * @details Calcula el Tiempo Sideral Aparente de Greenwich (GAST) en radianes para una fecha dada.
+ * @param Mjd_UT1 Fecha en Tiempo Universal UT1 (Modified Julian Date)
+ * @return Tiempo Sideral Aparente de Greenwich en radianes (rango [0, 2π])
+ */
 double gast(double Mjd_UT1);
 
 #endif

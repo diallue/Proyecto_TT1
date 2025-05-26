@@ -17,6 +17,12 @@
 #include <vector>
 #include <tuple>
 
+/**
+ * @details Calcula la aceleración total que actúa sobre un satélite considerando múltiples perturbaciones
+ * @param x Tiempo desde la época de referencia [s]
+ * @param Y Vector de estado (6x1) [posición; velocidad] [m, m/s]
+ * @return Derivada del vector de estado (6x1) [velocidad; aceleración] [m/s, m/s²]
+ */
 Matrix Accel(double x, Matrix Y);
 
 #endif

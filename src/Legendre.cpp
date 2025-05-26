@@ -4,7 +4,6 @@ using namespace std;
 
 /**
  * Calcula los polinomios de Legendre asociados normalizados y sus derivadas.
- * 
  * @param n Grado máximo del polinomio
  * @param m Orden máximo del polinomio
  * @param fi Latitud geocéntrica en radianes
