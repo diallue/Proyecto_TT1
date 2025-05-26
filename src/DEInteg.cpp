@@ -24,10 +24,12 @@ enum class DE_STATE {
  * @return Vector de estado en el tiempo tout.
  * @throw Error si los parámetros son inválidos o se accede a índices fuera de rango.
  */
-Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, double abserr, int n_eqn, Matrix &y) {
+Matrix DEInteg(Matrix f(double t, Matrix z), double t, double tout, double relerr, double abserr, int n_eqn, Matrix &y) {
+	if(y.n_row<y.n_column){
+		y=transpose(y);
+	}
     const double twou = 2.0 * std::numeric_limits<double>::epsilon();
     const double fouru = 4.0 * std::numeric_limits<double>::epsilon();
-    const int maxnum = 500;
 
     DE_STATE State_ = DE_STATE::DE_INIT;
     bool PermitTOUT = true;
@@ -49,7 +51,6 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
         static_cast<int>(State_) > static_cast<int>(DE_STATE::DE_INVPARAM) ||
         (State_ != DE_STATE::DE_INIT && t != told)) {
         State_ = DE_STATE::DE_INVPARAM;
-        std::cerr << "Parámetros inválidos en DEInteg\n";
         return y;
     }
 
@@ -58,32 +59,24 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
     if (!PermitTOUT) tend = tout;
 
     int nostep = 0, kle4 = 0;
-    bool stiff = false, start = true, phase1 = true, nornd = true, crash = false;
+    bool stiff = false, start = false, phase1 = false, nornd = false, crash = false;
     double releps = relerr / epsilon, abseps = abserr / epsilon;
-    double x = t, h = 0.0, hold = 0.0, hnew = 0.0, delsgn = 0.0;
+    double x = 0.0, h = 0.0, hold = 0.0, hnew = 0.0, delsgn = 0.0;
     double absh = 0.0;
-    int k = 1, kold = 0, ns = 0, ifail = 0;
+    int k = 0, kold = 0, ns = 0, ifail = 0;
     int kp1 = 0, kp2 = 0, km1 = 0, km2 = 0, knew = 0;
     double erk = 0.0, erkm1 = 0.0, erkm2 = 0.0, erkp1 = 0.0, err = 0.0;
     bool OldPermit = false;
 
-    if (start || !OldPermit || delsgn * del <= 0.0) {
+    if (State_ == DE_STATE::DE_INIT || !OldPermit || delsgn * del <= 0.0) {
+        start = true;
+        x = t;
         yy = y;
-        delsgn = del > 0.0 ? 1.0 : -1.0;
-        h = sign_(std::min(1e-3, std::max(fouru * std::abs(x), std::abs(tout - x))), tout - x);
+        delsgn = sign_(1.0, del);
+        h = sign_(std::max(fouru * std::abs(x), std::abs(tout - x)), tout - x);
     }
 
     while (true) {
-        if (nostep >= maxnum) {
-            State_ = DE_STATE::DE_NUMSTEPS;
-            if (stiff) State_ = DE_STATE::DE_STIFF;
-            std::cerr << "Error: Excedido número máximo de pasos (" << maxnum << ") en DEInteg\n";
-            t = x;
-            told = t;
-            OldPermit = true;
-            return yy;
-        }
-
         if (std::abs(x - t) >= absdel) {
             Matrix yout(n_eqn, 1), ypout(n_eqn, 1);
             g(2, 1) = 1.0;
@@ -91,13 +84,13 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
             double hi = tout - x;
             int ki = kold + 1;
 
-            for (int i = 1; i <= ki; ++i) w(i, 1) = 1.0 / i;
+            for (int i = 1; i <= ki; ++i) w(i + 1, 1) = 1.0 / i;
             double term = 0.0;
             for (int j = 2; j <= ki; ++j) {
-                double psijm1 = psi_(j - 1, 1);
+                double psijm1 = psi_(j, 1);
                 double gamma = (hi + term) / psijm1, eta = hi / psijm1;
                 for (int i = 1; i <= ki + 1 - j; ++i)
-                    w(i, 1) = gamma * w(i, 1) - eta * w(i + 1, 1);
+                    w(i + 1, 1) = gamma * w(i + 1, 1) - eta * w(i + 2, 1);
                 g(j + 1, 1) = w(2, 1);
                 rho(j + 1, 1) = gamma * rho(j, 1);
                 term = psijm1;
@@ -137,6 +130,7 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
         if (std::abs(h) < fouru * std::abs(x)) {
             h = sign_(fouru * std::abs(x), h);
             crash = true;
+            return y;
         }
 
         double p5eps = 0.5 * epsilon;
@@ -147,15 +141,16 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
 
         double round = 0.0;
         for (int l = 1; l <= n_eqn; ++l)
-            round += (yy(l, 1) * yy(l, 1)) / (wt(l, 1) * wt(l, 1));
+            round += (y(l, 1) * y(l, 1)) / (wt(l, 1) * wt(l, 1));
         round = twou * std::sqrt(round);
         if (p5eps < round) {
             epsilon = 2.0 * round * (1.0 + fouru);
             crash = true;
+            return y;
         }
 
         if (start) {
-            yp = f(x, yy);
+            yp = f(x, y);
             double sum = 0.0;
             for (int l = 1; l <= n_eqn; ++l) {
                 phi(l, 2) = yp(l, 1);
@@ -190,45 +185,45 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
             int nsp1 = ns + 1;
 
             if (k >= ns) {
-                beta(ns, 1) = 1.0;
-                alpha(ns, 1) = 1.0 / ns;
+                beta(ns + 1, 1) = 1.0;
+                alpha(ns + 1, 1) = 1.0 / ns;
                 double temp1 = h * ns;
-                sig(nsp1, 1) = 1.0;
+                sig(nsp1 + 1, 1) = 1.0;
                 if (k >= nsp1) {
                     for (int i = nsp1; i <= k; ++i) {
                         int im1 = i - 1;
-                        double temp2 = psi_(im1, 1);
-                        psi_(im1, 1) = temp1;
-                        beta(i, 1) = beta(im1, 1) * psi_(im1, 1) / temp2;
+                        double temp2 = psi_(im1 + 1, 1);
+                        psi_(im1 + 1, 1) = temp1;
+                        beta(i + 1, 1) = beta(im1 + 1, 1) * psi_(im1 + 1, 1) / temp2;
                         temp1 = temp2 + h;
-                        alpha(i, 1) = h / temp1;
-                        sig(i + 1, 1) = i * alpha(i, 1) * sig(i, 1);
+                        alpha(i + 1, 1) = h / temp1;
+                        sig(i + 2, 1) = i * alpha(i + 1, 1) * sig(i + 1, 1);
                     }
                 }
-                psi_(k, 1) = temp1;
+                psi_(k + 1, 1) = temp1;
 
                 if (ns > 1) {
                     if (k > kold) {
                         double temp4 = k * kp1;
-                        v(k, 1) = 1.0 / temp4;
+                        v(k + 1, 1) = 1.0 / temp4;
                         int nsm2 = ns - 2;
                         for (int j = 1; j <= nsm2; ++j) {
                             int i = k - j;
-                            v(i, 1) -= alpha(j + 1, 1) * v(i + 1, 1);
+                            v(i + 1, 1) -= alpha(j + 2, 1) * v(i + 2, 1);
                         }
                     }
                     int limit1 = kp1 - ns;
-                    double temp5 = alpha(ns, 1);
+                    double temp5 = alpha(ns + 1, 1);
                     for (int iq = 1; iq <= limit1; ++iq) {
-                        v(iq, 1) -= temp5 * v(iq + 1, 1);
-                        w(iq, 1) = v(iq, 1);
+                        v(iq + 1, 1) -= temp5 * v(iq + 2, 1);
+                        w(iq + 1, 1) = v(iq + 1, 1);
                     }
-                    g(nsp1, 1) = w(2, 1);
+                    g(nsp1 + 1, 1) = w(2, 1);
                 } else {
                     for (int iq = 1; iq <= k; ++iq) {
                         double temp3 = iq * (iq + 1);
-                        v(iq, 1) = 1.0 / temp3;
-                        w(iq, 1) = v(iq, 1);
+                        v(iq + 1, 1) = 1.0 / temp3;
+                        w(iq + 1, 1) = v(iq + 1, 1);
                     }
                 }
 
@@ -236,25 +231,25 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
                 if (kp1 >= nsp2) {
                     for (int i = nsp2; i <= kp1; ++i) {
                         int limit2 = kp2 - i;
-                        double temp6 = alpha(i - 1, 1);
+                        double temp6 = alpha(i, 1);
                         for (int iq = 1; iq <= limit2; ++iq)
-                            w(iq, 1) -= temp6 * w(iq + 1, 1);
-                        g(i, 1) = w(2, 1);
+                            w(iq + 1, 1) -= temp6 * w(iq + 2, 1);
+                        g(i + 1, 1) = w(2, 1);
                     }
                 }
             }
 
             if (k >= nsp1) {
                 for (int i = nsp1; i <= k; ++i) {
-                    double temp1 = beta(i, 1);
+                    double temp1 = beta(i + 1, 1);
                     for (int l = 1; l <= n_eqn; ++l)
                         phi(l, i + 1) = temp1 * phi(l, i + 1);
                 }
             }
 
             for (int l = 1; l <= n_eqn; ++l) {
-                phi(l, kp2) = phi(l, kp1);
-                phi(l, kp1) = 0.0;
+                phi(l, kp2 + 1) = phi(l, kp1 + 1);
+                phi(l, kp1 + 1) = 0.0;
                 p(l, 1) = 0.0;
             }
             for (int j = 1; j <= k; ++j) {
@@ -262,16 +257,16 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
                 double temp2 = g(i + 1, 1);
                 for (int l = 1; l <= n_eqn; ++l) {
                     p(l, 1) += temp2 * phi(l, i + 1);
-                    phi(l, i + 1) += phi(l, ip1);
+                    phi(l, i + 1) += phi(l, ip1 + 1);
                 }
             }
             if (nornd) {
-                p = yy + p * h;
+                p = y + p * h;
             } else {
                 for (int l = 1; l <= n_eqn; ++l) {
                     double tau = h * p(l, 1) - phi(l, 16);
-                    p(l, 1) = yy(l, 1) + tau;
-                    phi(l, 17) = (p(l, 1) - yy(l, 1)) - tau;
+                    p(l, 1) = y(l, 1) + tau;
+                    phi(l, 17) = (p(l, 1) - y(l, 1)) - tau;
                 }
             }
             double xold = x;
@@ -291,12 +286,22 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
                 erk += std::pow(temp4 * temp3, 2);
             }
 
-            if (km2 > 0) erkm2 = absh * sig(km1, 1) * gstr[km2 - 1] * std::sqrt(erkm2);
-            if (km2 >= 0) erkm1 = absh * sig(k, 1) * gstr[km1 - 1] * std::sqrt(erkm1);
+            if (km2 > 0) {
+                if (static_cast<size_t>(km2) >= gstr.size())
+                    throw std::out_of_range("Índice km2 fuera de rango en gstr");
+                erkm2 = absh * sig(km1 + 1, 1) * gstr[km2] * std::sqrt(erkm2);
+            }
+            if (km2 >= 0) {
+                if (static_cast<size_t>(km1) >= gstr.size())
+                    throw std::out_of_range("Índice km1 fuera de rango en gstr");
+                erkm1 = absh * sig(k + 1, 1) * gstr[km1] * std::sqrt(erkm1);
+            }
 
             double temp5 = absh * std::sqrt(erk);
-            err = temp5 * (g(k + 1, 1) - g(kp1 + 1, 1));
-            erk = temp5 * sig(kp1, 1) * gstr[k - 1];
+            err = temp5 * (g(k + 1, 1) - g(kp1 + 1, 1)); 
+            if (static_cast<size_t>(k) >= gstr.size())
+                throw std::out_of_range("Índice k fuera de rango en gstr");
+            erk = temp5 * sig(kp1 + 1, 1) * gstr[k];
             knew = k;
 
             if (km2 > 0 && std::max(erkm1, erkm2) <= erk) knew = km1;
@@ -308,14 +313,14 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
                 phase1 = false;
                 x = xold;
                 for (int i = 1; i <= k; ++i) {
-                    double temp1 = 1.0 / beta(i, 1);
+                    double temp1 = 1.0 / beta(i + 1, 1);
                     int ip1 = i + 1;
                     for (int l = 1; l <= n_eqn; ++l)
-                        phi(l, i + 1) = temp1 * (phi(l, i + 1) - phi(l, ip1));
+                        phi(l, i + 1) = temp1 * (phi(l, i + 1) - phi(l, ip1 + 1));
                 }
                 if (k >= 2) {
                     for (int i = 2; i <= k; ++i)
-                        psi_(i - 1) = psi_(i) - h;
+                        psi_(i, 1) = psi_(i + 1, 1) - h;
                 }
                 ifail++;
                 double temp2 = 0.5;
@@ -327,6 +332,7 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
                     crash = true;
                     h = sign_(fouru * std::abs(x), h);
                     epsilon *= 2.0;
+                    return y;
                 }
             } else {
                 break;
@@ -350,12 +356,12 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
         yp = f(x, y);
 
         for (int l = 1; l <= n_eqn; ++l) {
-            phi(l, kp1) = yp(l, 1) - phi(l, 2);
-            phi(l, kp2) = phi(l, kp1) - phi(l, kp2);
+            phi(l, kp1 + 1) = yp(l, 1) - phi(l, 2);
+            phi(l, kp2 + 1) = phi(l, kp1 + 1) - phi(l, kp2 + 1);
         }
         for (int i = 1; i <= k; ++i) {
             for (int l = 1; l <= n_eqn; ++l)
-                phi(l, i + 1) += phi(l, kp1);
+                phi(l, i + 1) += phi(l, kp1 + 1);
         }
 
         erkp1 = 0.0;
@@ -363,8 +369,10 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
 
         if (!phase1 && kp1 <= ns) {
             for (int l = 1; l <= n_eqn; ++l)
-                erkp1 += std::pow(phi(l, kp2) / wt(l, 1), 2);
-            erkp1 = absh * gstr[kp1 - 1] * std::sqrt(erkp1);
+                erkp1 += std::pow(phi(l, kp2 + 1) / wt(l, 1), 2);
+            if (static_cast<size_t>(kp1) >= gstr.size())
+                throw std::out_of_range("Índice kp1 fuera de rango en gstr");
+            erkp1 = absh * gstr[kp1] * std::sqrt(erkp1);
             if (k > 1) {
                 if (erkm1 <= std::min(erk, erkp1)) {
                     k = km1;
@@ -399,7 +407,6 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
             t = x;
             told = t;
             OldPermit = true;
-            std::cerr << "No se logró la precisión requerida en DEInteg\n";
             return y;
         }
 
@@ -409,7 +416,11 @@ Matrix DEInteg(Matrix f(double, Matrix), double t, double tout, double relerr, d
         if (kle4 >= 50) stiff = true;
     }
 
-    if (State_ == DE_STATE::DE_STIFF) {
+    if (State_ == DE_STATE::DE_INVPARAM) {
+        std::cerr << "Parámetros inválidos en DEInteg\n";
+    } else if (State_ == DE_STATE::DE_BADACC) {
+        std::cerr << "No se logró la precisión requerida en DEInteg\n";
+    } else if (State_ == DE_STATE::DE_STIFF) {
         std::cerr << "Se sospecha un problema rígido en DEInteg\n";
     }
 

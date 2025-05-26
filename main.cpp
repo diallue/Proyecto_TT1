@@ -2,7 +2,7 @@
 #include "..\include\R_x.hpp"
 #include "..\include\R_y.hpp"
 #include "..\include\R_z.hpp"
-#include "..\include\gloabl.hpp"
+#include "..\include\global.hpp"
 #include <iostream>
 
 using namespace std;

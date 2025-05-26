@@ -8,6 +8,7 @@
 #include <iostream>
 #include <cmath>
 #include <limits>
+#include <array>
 
 /**
  * @details Integra ecuaciones diferenciales ordinarias (ODE) usando un método de diferencias hacia atrás de paso variable (método de Gear).
