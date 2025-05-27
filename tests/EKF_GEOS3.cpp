@@ -54,9 +54,9 @@ int main() {
     r2(1, 1) = 6221397.62857869;
     r2(2, 1) = 2867713.77965738;
     r2(3, 1) = 3006155.98509949;
-    v2(1, 1) = 3837.62169313926;
-    v2(2, 1) = -1382.03320148307;
-    v2(3, 1) = -5978.16810402366;
+    v2(1, 1) = 4645.04725161806;
+    v2(2, 1) = -2752.21591588204;
+    v2(3, 1) = -7507.99940987031;
 
     Matrix Y0_apr(6, 1);
     for (int i = 1; i <= 3; i++) {
@@ -220,13 +220,13 @@ int main() {
     Y_true(6, 1) = -5.728216e3;
 
     std::cout << "\nError de Estimación de Posición\n";
-    std::cout << "dX" << std::setw(10) << std::fixed << std::setprecision(1) << Y0(1, 1) - Y_true(1, 1) << " [m]\n";
-    std::cout << "dY" << std::setw(10) << std::fixed << std::setprecision(1) << Y0(2, 1) - Y_true(2, 1) << " [m]\n";
-    std::cout << "dZ" << std::setw(10) << std::fixed << std::setprecision(1) << Y0(3, 1) - Y_true(3, 1) << " [m]\n";
+    std::cout << "dX " << std::setw(10) << std::fixed << std::setprecision(1) << Y0(1, 1) - Y_true(1, 1) << " [m]\n";
+    std::cout << "dY " << std::setw(10) << std::fixed << std::setprecision(1) << Y0(2, 1) - Y_true(2, 1) << " [m]\n";
+    std::cout << "dZ " << std::setw(10) << std::fixed << std::setprecision(1) << Y0(3, 1) - Y_true(3, 1) << " [m]\n";
     std::cout << "\nError de Estimación de Velocidad\n";
-    std::cout << "dVx" << std::setw(8) << std::fixed << std::setprecision(1) << Y0(4, 1) - Y_true(4, 1) << " [m/s]\n";
-    std::cout << "dVy" << std::setw(8) << std::fixed << std::setprecision(1) << Y0(5, 1) - Y_true(5, 1) << " [m/s]\n";
-    std::cout << "dVz" << std::setw(8) << std::fixed << std::setprecision(1) << Y0(6, 1) - Y_true(6, 1) << " [m/s]\n";
+    std::cout << "dVx " << std::setw(8) << std::fixed << std::setprecision(1) << Y0(4, 1) - Y_true(4, 1) << " [m/s]\n";
+    std::cout << "dVy " << std::setw(8) << std::fixed << std::setprecision(1) << Y0(5, 1) - Y_true(5, 1) << " [m/s]\n";
+    std::cout << "dVz " << std::setw(8) << std::fixed << std::setprecision(1) << Y0(6, 1) - Y_true(6, 1) << " [m/s]\n";
 
     return 0;
 }

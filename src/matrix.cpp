@@ -17,8 +17,8 @@ Matrix::Matrix(const int v_size) {
         exit(EXIT_FAILURE);
     }
     
-    this->n_row = v_size;
-    this->n_column = 1;
+    this->n_row = 1;
+    this->n_column = v_size;
     this->data = (double**)malloc(v_size * sizeof(double*));
     
     if (this->data == NULL) {
@@ -26,13 +26,11 @@ Matrix::Matrix(const int v_size) {
         exit(EXIT_FAILURE);
     }
     
-    for (int i = 0; i < v_size; i++) {
-        this->data[i] = (double*)calloc(1, sizeof(double)); // 1 columna
-        if (this->data[i] == NULL) {
-            cout << "Matrix: Error in data row allocation\n";
-            exit(EXIT_FAILURE);
-        }
-    }
+	if (this->data == NULL) {
+		cout << "Matrix: Error in data row allocation\n";
+		exit(EXIT_FAILURE);
+	}
+	this->data[0] = (double*)calloc(v_size, sizeof(double));
 }
 
 /**
@@ -109,7 +107,7 @@ Matrix Matrix::operator + (Matrix m) {
 	
     for(int i = 1; i <= this->n_row; i++) {
         for(int j = 1; j <= this->n_column; j++) {
-			(*m_aux)(i,j) = (*this)(i,j) + m(i,j);
+			m_aux->data[i-1][j-1] = this->data[i-1][j-1] + m.data[i-1][j-1];
 		}
 	}
 	

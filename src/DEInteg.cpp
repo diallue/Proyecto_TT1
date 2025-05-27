@@ -25,9 +25,9 @@ enum class DE_STATE {
  * @throw Error si los parámetros son inválidos o se accede a índices fuera de rango.
  */
 Matrix DEInteg(Matrix f(double t, Matrix z), double t, double tout, double relerr, double abserr, int n_eqn, Matrix &y) {
-	if(y.n_row<y.n_column){
-		y=transpose(y);
-	}
+	if (y.n_row < y.n_column) {
+        y = transpose(y);
+    }
     const double twou = 2.0 * std::numeric_limits<double>::epsilon();
     const double fouru = 4.0 * std::numeric_limits<double>::epsilon();
 
@@ -51,7 +51,7 @@ Matrix DEInteg(Matrix f(double t, Matrix z), double t, double tout, double reler
         static_cast<int>(State_) > static_cast<int>(DE_STATE::DE_INVPARAM) ||
         (State_ != DE_STATE::DE_INIT && t != told)) {
         State_ = DE_STATE::DE_INVPARAM;
-        return y;
+        throw std::invalid_argument("Invalid parameters in DEInteg");
     }
 
     double del = tout - t, absdel = std::abs(del);
@@ -124,13 +124,18 @@ Matrix DEInteg(Matrix f(double t, Matrix z), double t, double tout, double reler
         }
 
         h = sign_(std::min(std::abs(h), std::abs(tend - x)), h);
-        for (int l = 1; l <= n_eqn; ++l)
+        for (int l = 1; l <= n_eqn; ++l) {
             wt(l, 1) = releps * std::abs(yy(l, 1)) + abseps;
+            if (wt(l, 1) == 0.0) {
+                State_ = DE_STATE::DE_INVPARAM;
+                throw std::runtime_error("Zero weight detected in error estimation");
+            }
+        }
 
         if (std::abs(h) < fouru * std::abs(x)) {
             h = sign_(fouru * std::abs(x), h);
-            crash = true;
-            return y;
+            State_ = DE_STATE::DE_BADACC;
+            throw std::runtime_error("Step size too small");
         }
 
         double p5eps = 0.5 * epsilon;
@@ -144,9 +149,8 @@ Matrix DEInteg(Matrix f(double t, Matrix z), double t, double tout, double reler
             round += (y(l, 1) * y(l, 1)) / (wt(l, 1) * wt(l, 1));
         round = twou * std::sqrt(round);
         if (p5eps < round) {
-            epsilon = 2.0 * round * (1.0 + fouru);
-            crash = true;
-            return y;
+            State_ = DE_STATE::DE_BADACC;
+            throw std::runtime_error("Error tolerance too small");
         }
 
         if (start) {
@@ -195,7 +199,7 @@ Matrix DEInteg(Matrix f(double t, Matrix z), double t, double tout, double reler
                         double temp2 = psi_(im1 + 1, 1);
                         psi_(im1 + 1, 1) = temp1;
                         beta(i + 1, 1) = beta(im1 + 1, 1) * psi_(im1 + 1, 1) / temp2;
-                        temp1 = temp2 + h;
+                        temp1 = temp2 + temp1;
                         alpha(i + 1, 1) = h / temp1;
                         sig(i + 2, 1) = i * alpha(i + 1, 1) * sig(i + 1, 1);
                     }
@@ -209,21 +213,21 @@ Matrix DEInteg(Matrix f(double t, Matrix z), double t, double tout, double reler
                         int nsm2 = ns - 2;
                         for (int j = 1; j <= nsm2; ++j) {
                             int i = k - j;
-                            v(i + 1, 1) -= alpha(j + 2, 1) * v(i + 2, 1);
+                            v(i, 1) = v(i + 1, 1) - alpha(j + 2, 1) * v(i + 2, 1);
                         }
                     }
                     int limit1 = kp1 - ns;
                     double temp5 = alpha(ns + 1, 1);
                     for (int iq = 1; iq <= limit1; ++iq) {
-                        v(iq + 1, 1) -= temp5 * v(iq + 2, 1);
-                        w(iq + 1, 1) = v(iq + 1, 1);
+                        v(iq, 1) = v(iq + 1, 1) - temp5 * v(iq + 2, 1);
+                        w(iq, 1) = v(iq, 1);
                     }
-                    g(nsp1 + 1, 1) = w(2, 1);
+                    g(nsp1, 1) = w(2, 1);
                 } else {
                     for (int iq = 1; iq <= k; ++iq) {
                         double temp3 = iq * (iq + 1);
-                        v(iq + 1, 1) = 1.0 / temp3;
-                        w(iq + 1, 1) = v(iq + 1, 1);
+                        v(iq, 1) = 1.0 / temp3;
+                        w(iq, 1) = v(iq, 1);
                     }
                 }
 
@@ -233,18 +237,16 @@ Matrix DEInteg(Matrix f(double t, Matrix z), double t, double tout, double reler
                         int limit2 = kp2 - i;
                         double temp6 = alpha(i, 1);
                         for (int iq = 1; iq <= limit2; ++iq)
-                            w(iq + 1, 1) -= temp6 * w(iq + 2, 1);
-                        g(i + 1, 1) = w(2, 1);
+                            w(iq, 1) -= temp6 * w(iq + 2, 1);
+                        g(i, 1) = w(2, 1);
                     }
                 }
             }
 
-            if (k >= nsp1) {
-                for (int i = nsp1; i <= k; ++i) {
-                    double temp1 = beta(i + 1, 1);
-                    for (int l = 1; l <= n_eqn; ++l)
-                        phi(l, i + 1) = temp1 * phi(l, i + 1);
-                }
+            for (int i = nsp1; i <= k; ++i) {
+                double temp1 = beta(i, 1);
+                for (int l = 1; l <= n_eqn; ++l)
+                    phi(l, i + 1) = temp1 * phi(l, i + 1);
             }
 
             for (int l = 1; l <= n_eqn; ++l) {
@@ -254,7 +256,7 @@ Matrix DEInteg(Matrix f(double t, Matrix z), double t, double tout, double reler
             }
             for (int j = 1; j <= k; ++j) {
                 int i = kp1 - j, ip1 = i + 1;
-                double temp2 = g(i + 1, 1);
+                double temp2 = g(i, 1);
                 for (int l = 1; l <= n_eqn; ++l) {
                     p(l, 1) += temp2 * phi(l, i + 1);
                     phi(l, i + 1) += phi(l, ip1 + 1);
@@ -287,19 +289,19 @@ Matrix DEInteg(Matrix f(double t, Matrix z), double t, double tout, double reler
             }
 
             if (km2 > 0) {
-                if (static_cast<size_t>(km2) >= gstr.size())
+                if (km2 >= static_cast<int>(gstr.size()))
                     throw std::out_of_range("Índice km2 fuera de rango en gstr");
                 erkm2 = absh * sig(km1 + 1, 1) * gstr[km2] * std::sqrt(erkm2);
             }
             if (km2 >= 0) {
-                if (static_cast<size_t>(km1) >= gstr.size())
+                if (km1 < 0 || km1 >= static_cast<int>(gstr.size()))
                     throw std::out_of_range("Índice km1 fuera de rango en gstr");
                 erkm1 = absh * sig(k + 1, 1) * gstr[km1] * std::sqrt(erkm1);
             }
 
             double temp5 = absh * std::sqrt(erk);
-            err = temp5 * (g(k + 1, 1) - g(kp1 + 1, 1)); 
-            if (static_cast<size_t>(k) >= gstr.size())
+            err = temp5 * (g(k + 1, 1) - g(kp1 + 1, 1));
+            if (k < 0 || k >= static_cast<int>(gstr.size()))
                 throw std::out_of_range("Índice k fuera de rango en gstr");
             erk = temp5 * sig(kp1 + 1, 1) * gstr[k];
             knew = k;
@@ -318,111 +320,111 @@ Matrix DEInteg(Matrix f(double t, Matrix z), double t, double tout, double reler
                     for (int l = 1; l <= n_eqn; ++l)
                         phi(l, i + 1) = temp1 * (phi(l, i + 1) - phi(l, ip1 + 1));
                 }
-                if (k >= 2) {
-                    for (int i = 2; i <= k; ++i)
-                        psi_(i, 1) = psi_(i + 1, 1) - h;
+                    if (k >= 2) {
+                        for (int i = 2; i <= k; ++i)
+                            psi_(i, 1) = psi_(i + 1, 1) - h;
+                    }
+                    ifail++;
+					std::cerr << "Fallo #" << ifail << ": h=" << h << ", err=" << err << ", epsilon=" << epsilon << std::endl;
+					double temp2 = 0.5;
+                    if (ifail > 3 && p5eps < 0.25 * erk) temp2 = std::sqrt(p5eps / erk);
+                    if (ifail >= 3) knew = 1;
+                    h *= temp2;
+                    if (std::abs(h) < fouru * std::abs(x)) {
+						std::cerr << "Error: h=" << h << " demasiado pequeño en x=" << x << std::endl;
+                        State_ = DE_STATE::DE_BADACC;
+                        throw std::runtime_error("Step size too small after repeated failures");
+                    }
+                } else {
+                    break;
                 }
-                ifail++;
-                double temp2 = 0.5;
-                if (ifail > 3 && p5eps < 0.25 * erk) temp2 = std::sqrt(p5eps / erk);
-                if (ifail >= 3) knew = 1;
-                h *= temp2;
-                k = knew;
-                if (std::abs(h) < fouru * std::abs(x)) {
-                    crash = true;
-                    h = sign_(fouru * std::abs(x), h);
-                    epsilon *= 2.0;
-                    return y;
-                }
-            } else {
-                break;
             }
-        }
 
-        kold = k;
-        hold = h;
+            kold = k;
+            hold = h;
 
-        double temp1 = h * g(kp1 + 1, 1);
-        if (nornd) {
-            for (int l = 1; l <= n_eqn; ++l)
-                y(l, 1) = p(l, 1) + temp1 * (yp(l, 1) - phi(l, 2));
-        } else {
+            double temp2 = h * g(kp1 + 1, 1);
             for (int l = 1; l <= n_eqn; ++l) {
-                double rho = temp1 * (yp(l, 1) - phi(l, 2)) - phi(l, 17);
-                y(l, 1) = p(l, 1) + rho;
-                phi(l, 16) = (y(l, 1) - p(l, 1)) - rho;
-            }
-        }
-        yp = f(x, y);
+                if (nornd) {
+                    for (int l = 1; l <= n_eqn; ++l)
+                        y(l, 1) = p(l, 1) + temp2 * (yp(l, 1) - phi(l, 2));
+                } else {
+                    for (int l = 1; l <= n_eqn; ++l) {
+                        double rho_val = temp2 * (yp(l, 1) - phi(l, 2));
+                        y(l, 1) = p(l, 1) + rho_val;
+                        phi(l, 16) = (y(l, 1) - p(l, 1)) - rho_val;
+                    }
+                }
+                yp = f(x, y);
 
-        for (int l = 1; l <= n_eqn; ++l) {
-            phi(l, kp1 + 1) = yp(l, 1) - phi(l, 2);
-            phi(l, kp2 + 1) = phi(l, kp1 + 1) - phi(l, kp2 + 1);
-        }
-        for (int i = 1; i <= k; ++i) {
-            for (int l = 1; l <= n_eqn; ++l)
-                phi(l, i + 1) += phi(l, kp1 + 1);
-        }
+                for (int l = 1; l <= n_eqn; ++l) {
+                    phi(l, kp1 + 1) = yp(l, 1) - phi(l, 2);
+                    phi(l, kp2 + 1) = phi(l, kp1 + 1) - phi(l, kp2 + 1);
+                }
+                for (int i = 1; i <= k; ++i) {
+                    for (int l = 1; l <= n_eqn; ++l)
+                        phi(l, i + 1) += phi(l, kp1 + 1);
+                }
 
-        erkp1 = 0.0;
-        if (knew == km1 || k == 12) phase1 = false;
+                erkp1 = 0.0;
+                if (knew == km1 || k == 12) phase1 = false;
 
-        if (!phase1 && kp1 <= ns) {
-            for (int l = 1; l <= n_eqn; ++l)
-                erkp1 += std::pow(phi(l, kp2 + 1) / wt(l, 1), 2);
-            if (static_cast<size_t>(kp1) >= gstr.size())
-                throw std::out_of_range("Índice kp1 fuera de rango en gstr");
-            erkp1 = absh * gstr[kp1] * std::sqrt(erkp1);
-            if (k > 1) {
-                if (erkm1 <= std::min(erk, erkp1)) {
-                    k = km1;
-                    erk = erkm1;
-                } else if (erkp1 < erk && k != 12) {
+                if (phase1) {
                     k = kp1;
                     erk = erkp1;
+                } else if (knew == km1) {
+                    k = km1;
+                    erk = erkm1;
+                } else if (kp1 <= ns) {
+                    for (int l = 1; l <= n_eqn; ++l)
+                        erkp1 += std::pow(phi(l, kp2 + 1) / wt(l, 1), 2);
+                    if (kp1 < 0 || kp1 >= static_cast<int>(gstr.size()))
+                        throw std::out_of_range("Invalid kp1 index for gstr");
+                    erkp1 = absh * gstr[kp1] * std::sqrt(erkp1);
+                    if (k > 1) {
+                        if (erkm1 <= std::min(erk, erkp1)) {
+                            k = km1;
+                            erk = erkm1;
+                        } else if (erkp1 < erk && k != 12) {
+                            k = kp1;
+                            erk = erkp1;
+                        }
+                    } else if (erkp1 < 0.5 * erk) {
+                        k = kp1;
+                        erk = erkp1;
+                    }
                 }
-            } else if (erkp1 < 0.5 * erk) {
-                k = kp1;
-                erk = erkp1;
+
+                if (phase1 || p5eps >= erk * two[k]) {
+                    hnew = 2.0 * h;
+                } else if (p5eps < erk) {
+                    double temp2 = k + 1;
+                    double r = std::pow(p5eps / erk, 1.0 / temp2);
+                    hnew = absh * std::max(0.5, std::min(0.9, r));
+                    hnew = sign_(std::max(hnew, fouru * std::abs(x)), h);
+                } else {
+                    hnew = h;
+                }
+                h = hnew;
+
+                if (crash) {
+                    State_ = DE_STATE::DE_BADACC;
+                    throw std::runtime_error("Accuracy requirement not achieved");
+                }
+
+                nostep++;
+                kle4++;
+                if (kold > 4) kle4 = 0;
+                if (kle4 >= 100) {
+                    State_ = DE_STATE::DE_STIFF;
+                    throw std::runtime_error("Stiff problem detected");
+                }
             }
         }
 
-        if (phase1 || p5eps >= erk * two[k]) {
-            hnew = 2.0 * h;
-        } else if (p5eps < erk) {
-            double temp2 = k + 1;
-            double r = std::pow(p5eps / erk, 1.0 / temp2);
-            hnew = absh * std::max(0.5, std::min(0.9, r));
-            hnew = sign_(std::max(hnew, fouru * std::abs(x)), h);
-        } else {
-            hnew = h;
-        }
-        h = hnew;
-
-        if (crash) {
-            State_ = DE_STATE::DE_BADACC;
-            relerr = epsilon * releps;
-            abserr = epsilon * abseps;
-            y = yy;
-            t = x;
-            told = t;
-            OldPermit = true;
-            return y;
+        if (State_ == DE_STATE::DE_STIFF) {
+            throw std::runtime_error("Stiff problem suspected");
         }
 
-        nostep++;
-        kle4++;
-        if (kold > 4) kle4 = 0;
-        if (kle4 >= 50) stiff = true;
+        return y;
     }
-
-    if (State_ == DE_STATE::DE_INVPARAM) {
-        std::cerr << "Parámetros inválidos en DEInteg\n";
-    } else if (State_ == DE_STATE::DE_BADACC) {
-        std::cerr << "No se logró la precisión requerida en DEInteg\n";
-    } else if (State_ == DE_STATE::DE_STIFF) {
-        std::cerr << "Se sospecha un problema rígido en DEInteg\n";
-    }
-
-    return y;
-}
