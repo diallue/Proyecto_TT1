@@ -708,9 +708,11 @@ int nutangles_test_01() {
 }
 
 int timeupdate_test_01() {
+    std::cout << "Starting timeupdate_test_01\n";
+
     Matrix P(2, 2);
-    P(1,1) = 1.0; P(1,2) = 0.0;
-    P(2,1) = 0.0; P(2,2) = 1.0;
+    P(1,1) = 2.0; P(1,2) = 0.5;
+    P(2,1) = 0.5; P(2,2) = 1.0;
 
     Matrix Phi(2, 2);
     Phi(1,1) = 1.0; Phi(1,2) = 0.1;
@@ -720,19 +722,15 @@ int timeupdate_test_01() {
     Qdt(1,1) = 0.01; Qdt(1,2) = 0.0;
     Qdt(2,1) = 0.0; Qdt(2,2) = 0.01;
 
-    TimeUpdate(P, Phi, Qdt);
+    Matrix result = TimeUpdate(P, Phi, Qdt);
 
     Matrix expected(2, 2);
-    expected(1,1) = 1.02; expected(1,2) = 0.1;
-    expected(2,1) = 0.1; expected(2,2) = 1.01;
+    expected(1,1) = 2.12; expected(1,2) = 0.6;
+    expected(2,1) = 0.6; expected(2,2) = 1.01;
 
-    for(int i=1; i<=2; i++) {
-        for(int j=1; j<=2; j++) {
-            if(fabs(P(i,j)-expected(i,j)) > 1e-10) {
-                return 1;
-            }
-        }
-    }
+    _assert(m_equals(result, expected, 1e-10));
+
+    std::cout << "Finished timeupdate_test_01\n";
     return 0;
 }
 
@@ -1198,7 +1196,7 @@ int deinteg_test_01() {
 	A(6, 1) = -7507.99940987031;
 	
 	A = transpose(A);
-	Matrix result = DEInteg(Accel, 0, -134.999991953373, 1e-6, 1e-6, 6, A);
+	Matrix result = DEInteg(Accel, 0, -134.999991953373, 1e-13, 1e-6, 6, A);
 
     _assert(m_equals(expected, result, abs(expected(5)*1e-6)));
 

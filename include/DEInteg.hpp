@@ -9,6 +9,7 @@
 #include <cmath>
 #include <limits>
 #include <array>
+#include <functional>
 
 /**
  * @details Integra ecuaciones diferenciales ordinarias (ODE) usando un método de diferencias hacia atrás de paso variable (método de Gear).
@@ -22,6 +23,6 @@
  * @return Vector de estado en el tiempo tout.
  * @throw Error si los parámetros son inválidos o se accede a índices fuera de rango.
  */
-Matrix DEInteg(Matrix f(double t, Matrix z), double t, double tout, double relerr, double abserr, int n_eqn, Matrix &y);
+Matrix DEInteg(std::function<Matrix(double, Matrix)> f, double t, double tout, double relerr, double abserr, int n_eqn, Matrix &y);
 
 #endif

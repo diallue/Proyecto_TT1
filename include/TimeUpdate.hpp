@@ -12,6 +12,8 @@
  * @param Phi Matriz de transición de estado (n x n)
  * @param Qdt Matriz de covarianza del ruido del proceso integrada (n x n)
  */
-void TimeUpdate(Matrix& P, Matrix& Phi, Matrix& Qdt);
+Matrix TimeUpdate(Matrix P, Matrix Phi, Matrix Qdt);
+
+Matrix TimeUpdate(Matrix P, Matrix Phi);
 
 #endif
