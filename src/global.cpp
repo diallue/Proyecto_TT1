@@ -79,53 +79,38 @@ void AuxParamLoad() {
 }
 
 void GEOS3(int nobs) {
-	obs = zeros(nobs,4);
-	
-	FILE *fid = fopen("../data/GEOS3.txt","r");
-	
-	if(fid==NULL){
-		cout << "Fail open GEOS3.txt file \n";
-		exit(EXIT_FAILURE);
-	}
-	
-	int Y,MO,D,H,M,MI,S;
-	double AZ,EL,DIST;
-	char tline[57],y[5],mo[3],d[3],h[3],mi[3],s[6],az[10],el[9],dist[10],aux[2];
-	for (int i=1;i<=nobs;i++)
-	{
-		fgets(tline,sizeof(tline),fid);
-		strncpy(y,&(tline[0]),4);
-		y[4]='\0';
-		Y=atoi(y);
-		strncpy(mo,&(tline[5]),2);
-		mo[2]='\0';
-		MO=atoi(mo);
-		strncpy(d,&(tline[8]),2);
-		d[2]='\0';
-		D=atoi(d);
-		strncpy(h,&(tline[12]),2);
-		h[2]='\0';
-		H=atoi(h);
-		strncpy(mi,&(tline[15]),2);
-		mi[2]='\0';
-		MI=atoi(mi);
-		strncpy(s,&(tline[18]),5);
-		s[5]='\0';
-		S=atof(s);
-		strncpy(az,&(tline[25]),9);
-		az[9]='\0';
-		AZ=atof(az);
-		strncpy(el,&(tline[35]),8);
-		el[8]='\0';
-		EL=atof(el);
-		strncpy(dist,&(tline[44]),9);
-		dist[9]='\0';
-		DIST=atof(dist);
-		obs(i,1) = Mjday(Y,MO,D,H,MI,S);
-		obs(i,2) = RAD*AZ;
-		obs(i,3) = RAD*EL;
-		obs(i,4) = 1e3*DIST;
-	}
-	
-	fclose(fid);
+    obs = Matrix(nobs, 4);
+    std::ifstream geos3_file("../data/GEOS3.txt");
+    if (!geos3_file) {
+        std::cerr << "Error: No se pudo abrir GEOS3.txt\n";
+        exit(EXIT_FAILURE);
+    }
+    std::string line;
+    for (int i = 1; i <= nobs; ++i) {
+        if (!std::getline(geos3_file, line) || line.empty()) {
+            std::cerr << "Error: No se pudieron leer suficientes datos de GEOS3.txt en la línea " << i << "\n";
+            geos3_file.close();
+            exit(EXIT_FAILURE);
+        }
+        try {
+            int Y = std::stoi(line.substr(0, 4));
+            int M = std::stoi(line.substr(5, 2));
+            int D = std::stoi(line.substr(8, 2));
+            int h = std::stoi(line.substr(12, 2));
+            int m = std::stoi(line.substr(15, 2));
+            double s = std::stod(line.substr(18, 6));
+            double az = std::stod(line.substr(25, 8));
+            double el = std::stod(line.substr(35, 7));
+            double Dist = std::stod(line.substr(44, 10));
+            obs(i, 1) = Mjday(Y, M, D, h, m, s);
+            obs(i, 2) = RAD * az;
+            obs(i, 3) = RAD * el;
+            obs(i, 4) = 1e3 * Dist;
+        } catch (const std::exception& e) {
+            std::cerr << "Error: Formato inválido en GEOS3.txt en la línea " << i << ": " << e.what() << "\n";
+            geos3_file.close();
+            exit(EXIT_FAILURE);
+        }
+    }
+    geos3_file.close();
 }

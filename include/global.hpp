@@ -6,6 +6,10 @@
 #include "..\include\Mjday.hpp"
 #include <cmath>
 #include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
 
 typedef struct{
 	double Mjd_UTC,Mjd_TT;
@@ -23,6 +27,6 @@ void eop19620101(int c);
 void GGM03S(int n);
 void DE430Coeff(int row,int column);
 void AuxParamLoad();
-void GEOS3(int nobs);
+void GEOS3(int obs);
 
 #endif
