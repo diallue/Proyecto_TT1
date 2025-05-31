@@ -5,11 +5,8 @@ Each sample counts as 0.01 seconds.
 
   %   cumulative   self              self     total           
  time   seconds   seconds    calls  Ts/call  Ts/call  name    
-  0.00      0.00     0.00   316212     0.00     0.00  Matrix::operator()(int, int)
-  0.00      0.00     0.00        1     0.00     0.00  eop19620101(int)
-  0.00      0.00     0.00        1     0.00     0.00  zeros(int, int)
-  0.00      0.00     0.00        1     0.00     0.00  Matrix::Matrix(int, int)
-  0.00      0.00     0.00        1     0.00     0.00  Matrix::operator=(Matrix)
+  0.00      0.00     0.00        2     0.00     0.00  JPL_Eph_DE430(double)
+  0.00      0.00     0.00        1     0.00     0.00  DEInteg(std::function<Matrix (double, Matrix)>, double, double, double, double, int, Matrix&)
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -50,24 +47,14 @@ notice and this notice are preserved.
 granularity: each sample hit covers 4 byte(s) no time propagated
 
 index % time    self  children    called     name
-                0.00    0.00  316212/316212      zeros(int, int) [112]
-[110]    0.0    0.00    0.00  316212         Matrix::operator()(int, int) [110]
+                              316213             JPL_Eph_DE430(double) [107]
+                0.00    0.00       2/2           DEInteg(std::function<Matrix (double, Matrix)>, double, double, double, double, int, Matrix&) [108]
+[107]    0.0    0.00    0.00       2+316213  JPL_Eph_DE430(double) [107]
+                              316213             JPL_Eph_DE430(double) [107]
 -----------------------------------------------
-                0.00    0.00       1/1           main [64]
-[111]    0.0    0.00    0.00       1         eop19620101(int) [111]
-                0.00    0.00       1/1           zeros(int, int) [112]
-                0.00    0.00       1/1           Matrix::operator=(Matrix) [114]
------------------------------------------------
-                0.00    0.00       1/1           eop19620101(int) [111]
-[112]    0.0    0.00    0.00       1         zeros(int, int) [112]
-                0.00    0.00  316212/316212      Matrix::operator()(int, int) [110]
-                0.00    0.00       1/1           Matrix::Matrix(int, int) [113]
------------------------------------------------
-                0.00    0.00       1/1           zeros(int, int) [112]
-[113]    0.0    0.00    0.00       1         Matrix::Matrix(int, int) [113]
------------------------------------------------
-                0.00    0.00       1/1           eop19620101(int) [111]
-[114]    0.0    0.00    0.00       1         Matrix::operator=(Matrix) [114]
+                0.00    0.00       1/1           inv(Matrix&) [134]
+[108]    0.0    0.00    0.00       1         DEInteg(std::function<Matrix (double, Matrix)>, double, double, double, double, int, Matrix&) [108]
+                0.00    0.00       2/2           JPL_Eph_DE430(double) [107]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -160,5 +147,4 @@ notice and this notice are preserved.
 
 Index by function name
 
- [111] eop19620101(int)      [113] Matrix::Matrix(int, int) [110] Matrix::operator()(int, int)
- [112] zeros(int, int)       [114] Matrix::operator=(Matrix)
+ [107] JPL_Eph_DE430(double) [108] DEInteg(std::function<Matrix (double, Matrix)>, double, double, double, double, int, Matrix&)
